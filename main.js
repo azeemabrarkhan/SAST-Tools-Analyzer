@@ -3,19 +3,31 @@ import { makeDir, writeFileAsync, csvToArray } from "./services/file.js";
 import { log, clearLog } from "./services/logger.js";
 
 const currentDir = process.cwd();
-const prePatchDir = `${currentDir}\\dataset\\pre-patch\\`;
-const postPatchDir = `${currentDir}\\dataset\\post-patch\\`;
 const secbenchFilePath = `${currentDir}\\commitIDs\\secbench.csv`;
 
 let fileNumber = 1;
 
-const processCommit = async (commitUrl, isVul) => {
+const processCommit = async (secbenchCommit, isVul) => {
+  const commitUrl = `https://api.github.com/repos/${secbenchCommit.owner}/${
+    secbenchCommit.project
+  }/commits/${isVul ? secbenchCommit["sha-p"] : secbenchCommit.sha}`;
+
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetchCommit(commitUrl);
       const commitData = await response.json();
 
       if (commitData.files && commitData.files.length > 0) {
+        const pathToSaveFiles = `${currentDir}\\datasets\\secbench\\${
+          secbenchCommit.language
+        }\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.project}\\${
+          isVul
+            ? `pre-patch-${commitData.sha}\\`
+            : `post-patch-${commitData.sha}\\`
+        }`;
+
+        makeDir(pathToSaveFiles);
+
         const files = commitData.files.map((file) => ({
           fileName: file.filename,
           url: file.raw_url,
@@ -29,9 +41,7 @@ const processCommit = async (commitUrl, isVul) => {
             const rawFileText = await rawFileObj.text();
             const splitFileName = file.fileName.split("/");
             writeFileAsync(
-              `${isVul ? prePatchDir : postPatchDir}${
-                splitFileName[splitFileName.length - 1]
-              }`,
+              `${pathToSaveFiles}${splitFileName[splitFileName.length - 1]}`,
               rawFileText
             );
             resolve();
@@ -63,19 +73,11 @@ const processCommit = async (commitUrl, isVul) => {
 };
 
 const main = async () => {
-  makeDir(prePatchDir);
-  makeDir(postPatchDir);
   const secbenchData = await csvToArray(secbenchFilePath);
 
   for (const secbenchCommit of secbenchData) {
-    await processCommit(
-      `https://api.github.com/repos/${secbenchCommit.owner}/${secbenchCommit.project}/commits/${secbenchCommit["sha-p"]}`,
-      true
-    );
-    await processCommit(
-      `https://api.github.com/repos/${secbenchCommit.owner}/${secbenchCommit.project}/commits/${secbenchCommit.sha}`,
-      false
-    );
+    await processCommit(secbenchCommit, true);
+    await processCommit(secbenchCommit, false);
   }
 };
 
