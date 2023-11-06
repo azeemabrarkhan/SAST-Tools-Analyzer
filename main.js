@@ -1,8 +1,13 @@
 import { fetchCommit, fetchFile } from "./services/http.js";
 import { makeDir, writeFileAsync, csvToArray } from "./services/file.js";
 import { log, clearLog } from "./services/logger.js";
+import readline from "readline";
 
 const currentDir = process.cwd();
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 const secbenchFilePath = `${currentDir}\\commitIDs\\secbench.csv`;
 
 let fileNumber = 1;
@@ -72,12 +77,37 @@ const processCommit = async (secbenchCommit, isVul) => {
   });
 };
 
-const main = async () => {
-  const secbenchData = await csvToArray(secbenchFilePath);
+const printMenu = async () => {
+  return new Promise((resolve) => {
+    rl.question(
+      `Choose from the following option.
+    1- Fetch Secbench Commits
+    2- End Program
 
-  for (const secbenchCommit of secbenchData) {
-    await processCommit(secbenchCommit, true);
-    await processCommit(secbenchCommit, false);
+    `,
+      (option) => resolve(parseInt(option))
+    );
+  });
+};
+
+const main = async () => {
+  let shouldContinue = true;
+
+  while (shouldContinue) {
+    const option = await printMenu();
+    switch (option) {
+      case 1:
+        const secbenchData = await csvToArray(secbenchFilePath);
+        for (const secbenchCommit of secbenchData) {
+          await processCommit(secbenchCommit, true);
+          await processCommit(secbenchCommit, false);
+        }
+        break;
+      case 2:
+        shouldContinue = false;
+        rl.close();
+        break;
+    }
   }
 };
 
