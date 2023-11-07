@@ -12,50 +12,54 @@ const secbenchFilePath = `${currentDir}\\commitIDs\\secbench.csv`;
 
 let fileNumber = 1;
 
-const processCommit = async (secbenchCommit, isVul) => {
-  const commitUrl = `https://api.github.com/repos/${secbenchCommit.owner}/${
-    secbenchCommit.project
-  }/commits/${isVul ? secbenchCommit["sha-p"] : secbenchCommit.sha}`;
+const processCommit = async (baseUrl, pathToSaveFiles, shaV, sha) => {
+  const commitUrl = `${baseUrl}/commits/${sha}`;
+  const vulPath = makeDir(`${pathToSaveFiles}\\vul-${shaV}`);
+  const fixPath = makeDir(`${pathToSaveFiles}\\fixed-${sha}`);
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     try {
-      const response = await fetchCommit(commitUrl);
-      const commitData = await response.json();
+      const commitResponse = await fetchCommit(commitUrl);
+      const commitData = await commitResponse.json();
 
       if (commitData.files && commitData.files.length > 0) {
-        const pathToSaveFiles = `${currentDir}\\datasets\\secbench\\${
-          secbenchCommit.language
-        }\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.project}\\${
-          isVul
-            ? `pre-patch-${commitData.sha}\\`
-            : `post-patch-${commitData.sha}\\`
-        }`;
+        const fileNames = commitData.files.map((file) => file.filename);
 
-        makeDir(pathToSaveFiles);
-
-        const files = commitData.files.map((file) => ({
-          fileName: file.filename,
-          url: file.raw_url,
-        }));
-
-        for (const file of files) {
+        for (const fileName of fileNames) {
           console.log(fileNumber);
           fileNumber++;
-          try {
-            const rawFileObj = await fetchFile(file.url);
-            const rawFileText = await rawFileObj.text();
-            const splitFileName = file.fileName.split("/");
-            writeFileAsync(
-              `${pathToSaveFiles}${splitFileName[splitFileName.length - 1]}`,
-              rawFileText
-            );
-            resolve();
-          } catch (err) {
-            log(
-              `ERROR, while fetching file '${file.fileName}' from the url: ${file.url} - error trace: ${err}`
-            );
-            reject(err);
-          }
+          const splitFileName = fileName.split("/");
+          const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${shaV}`;
+          const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${sha}`;
+
+          fetchFile(vulFileUrl)
+            .then((text) =>
+              writeFileAsync(
+                `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
+                text
+              )
+            )
+            .catch((err) => {
+              log(
+                `ERROR, while fetching file '${fileName}' from the url: ${vulFileUrl} - error trace: ${err}`
+              );
+            });
+
+          fetchFile(fixFileUrl)
+            .then((text) => {
+              writeFileAsync(
+                `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
+                text
+              );
+              if (fileNames.indexOf(fileName) === fileNames.length - 1) {
+                resolve();
+              }
+            })
+            .catch((err) => {
+              log(
+                `ERROR, while fetching file '${fileName}' from the url: ${fixFileUrl} - error trace: ${err}`
+              );
+            });
         }
       } else if (commitData.files && commitData.files.length === 0) {
         log(
@@ -72,7 +76,6 @@ const processCommit = async (secbenchCommit, isVul) => {
       log(
         `ERROR, while fetching commit from the url: ${commitUrl} - error trace: ${err}`
       );
-      reject(err);
     }
   });
 };
@@ -90,6 +93,26 @@ const printMenu = async () => {
   });
 };
 
+const scrapSecbench = async () => {
+  const secbenchData = await csvToArray(secbenchFilePath);
+  for (const secbenchCommit of [
+    secbenchData[0],
+    secbenchData[1],
+    secbenchData[3],
+  ]) {
+    const baseUrl = `https://api.github.com/repos/${secbenchCommit.owner}/${secbenchCommit.project}`;
+
+    const pathToSaveFiles = `${currentDir}\\datasets\\secbench\\${secbenchCommit.language}\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.owner}\\${secbenchCommit.project}`;
+
+    await processCommit(
+      baseUrl,
+      pathToSaveFiles,
+      secbenchCommit["sha-p"],
+      secbenchCommit.sha
+    );
+  }
+};
+
 const main = async () => {
   let shouldContinue = true;
 
@@ -97,11 +120,7 @@ const main = async () => {
     const option = await printMenu();
     switch (option) {
       case 1:
-        const secbenchData = await csvToArray(secbenchFilePath);
-        for (const secbenchCommit of secbenchData) {
-          await processCommit(secbenchCommit, true);
-          await processCommit(secbenchCommit, false);
-        }
+        await scrapSecbench();
         break;
       case 2:
         shouldContinue = false;

@@ -3,13 +3,19 @@ import csv from "csv-parser";
 import { log } from "./logger.js";
 
 export const makeDir = (path) => {
+  let error = undefined;
+
   fs.mkdir(path, { recursive: true }, (err) => {
+    error = err;
+
     const logMessage = err
       ? `ERROR, while creating directory at ${path} - error trace: ${err}`
       : `SUCCESS, while creating directory at ${path}`;
 
     log(logMessage);
   });
+
+  return error ? undefined : path;
 };
 
 export const deleteFile = (filePath) => {
