@@ -10,12 +10,13 @@ const rl = readline.createInterface({
 });
 const secbenchFilePath = `${currentDir}\\commitIDs\\secbench.csv`;
 
+let vulnerablityCount = 1;
 let fileNumber = 1;
 
-const processCommit = async (baseUrl, pathToSaveFiles, shaV, sha) => {
+const processCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
   const commitUrl = `${baseUrl}/commits/${sha}`;
-  const vulPath = makeDir(`${pathToSaveFiles}\\vul-${shaV}`);
-  const fixPath = makeDir(`${pathToSaveFiles}\\fixed-${sha}`);
+  makeDir(vulPath);
+  makeDir(fixPath);
 
   return new Promise(async (resolve) => {
     try {
@@ -26,7 +27,7 @@ const processCommit = async (baseUrl, pathToSaveFiles, shaV, sha) => {
         const fileNames = commitData.files.map((file) => file.filename);
 
         for (const fileName of fileNames) {
-          console.log(fileNumber);
+          console.log(`${fileNumber} - ${fileName}`);
           fileNumber++;
           const splitFileName = fileName.split("/");
           const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${shaV}`;
@@ -83,10 +84,9 @@ const processCommit = async (baseUrl, pathToSaveFiles, shaV, sha) => {
 const printMenu = async () => {
   return new Promise((resolve) => {
     rl.question(
-      `Choose from the following option.
+      `\nChoose from the following option.
     1- Fetch Secbench Commits
-    2- End Program
-
+    2- End Program\n
     `,
       (option) => resolve(parseInt(option))
     );
@@ -95,18 +95,18 @@ const printMenu = async () => {
 
 const scrapSecbench = async () => {
   const secbenchData = await csvToArray(secbenchFilePath);
-  for (const secbenchCommit of [
-    secbenchData[0],
-    secbenchData[1],
-    secbenchData[3],
-  ]) {
+  for (const secbenchCommit of secbenchData) {
     const baseUrl = `https://api.github.com/repos/${secbenchCommit.owner}/${secbenchCommit.project}`;
 
-    const pathToSaveFiles = `${currentDir}\\datasets\\secbench\\${secbenchCommit.language}\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.owner}\\${secbenchCommit.project}`;
+    const vulPath = `${currentDir}\\datasets\\secbench\\vul\\${secbenchCommit.language}\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.owner}\\${secbenchCommit.project}\\${vulnerablityCount}\\${secbenchCommit["sha-p"]}`;
+    const fixPath = `${currentDir}\\datasets\\secbench\\fix\\${secbenchCommit.language}\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.owner}\\${secbenchCommit.project}\\${vulnerablityCount}\\${secbenchCommit.sha}`;
+
+    vulnerablityCount++;
 
     await processCommit(
       baseUrl,
-      pathToSaveFiles,
+      vulPath,
+      fixPath,
       secbenchCommit["sha-p"],
       secbenchCommit.sha
     );
