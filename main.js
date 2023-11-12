@@ -22,8 +22,8 @@ const MENU_TEXT = `\nChoose from the following options.
 5- End Program\n
 `;
 
-let vulnerablityCount = 1;
-let fileNumber = 1;
+let vulnerablityCount = 0;
+let fileNumber = 0;
 
 const processCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
   const commitUrl = `${baseUrl}/commits/${sha}`;
@@ -67,7 +67,6 @@ const processCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
                 `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
                 text
               );
-              vulnerablityCount++;
               if (fileNames.indexOf(fileName) === fileNames.length - 1) {
                 resolve();
               }
@@ -112,6 +111,8 @@ const scrapSecbench = async (partNumber) => {
     `${currentDir}\\commitIDs\\secbench${partNumber}.csv`
   );
   for (const secbenchCommit of secbenchData) {
+    vulnerablityCount++;
+
     const baseUrl = `https://api.github.com/repos/${secbenchCommit.owner}/${secbenchCommit.project}`;
 
     const vulPath = `${currentDir}\\datasets\\secbench\\vul\\${secbenchCommit.language}\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.owner}\\${secbenchCommit.project}\\${vulnerablityCount}\\${secbenchCommit["sha-p"]}`;
@@ -132,28 +133,31 @@ const scrapOssf = async () => {
   let numOfWeaknesses = 0;
 
   for (const ossfCommit of ossfData) {
+    vulnerablityCount++;
     numOfWeaknesses += ossfCommit.prePatch.weaknesses.length;
 
     const splittedUrl = ossfCommit.repository.split("/");
     const ownerAndProject = `${splittedUrl[3]}/${splittedUrl[4].split(".")[0]}`;
     const baseUrl = `https://api.github.com/repos/${ownerAndProject}`;
 
-    const vulPath = `${currentDir}\\datasets\\ossf\\vul\\${ossfCommit.CVE}\\${ownerAndProject}\\${vulnerablityCount}\\${ossfCommit.prePatch.commit}`;
-    const fixPath = `${currentDir}\\datasets\\ossf\\fix\\${ossfCommit.CVE}\\${ownerAndProject}\\${vulnerablityCount}\\${ossfCommit.postPatch.commit}`;
+    const vulPath = `${currentDir}\\datasets\\ossf\\vul\\${
+      ossfCommit.CVE
+    }\\${ownerAndProject.replace("/", "\\")}\\${vulnerablityCount}\\${
+      ossfCommit.prePatch.commit
+    }`;
+    const fixPath = `${currentDir}\\datasets\\ossf\\fix\\${
+      ossfCommit.CVE
+    }\\${ownerAndProject.replace("/", "\\")}\\${vulnerablityCount}\\${
+      ossfCommit.postPatch.commit
+    }`;
 
-    console.log(vulPath);
-    console.log(fixPath);
-
-    //   await processCommit(
-    //     baseUrl,
-    //     vulPath,
-    //     fixPath,
-    //     secbenchCommit["sha-p"],
-    //     secbenchCommit.sha
-    //   );
-    // }
-
-    console.log(numOfWeaknesses);
+    await processCommit(
+      baseUrl,
+      vulPath,
+      fixPath,
+      ossfCommit.prePatch.commit,
+      ossfCommit.postPatch.commit
+    );
   }
 };
 
