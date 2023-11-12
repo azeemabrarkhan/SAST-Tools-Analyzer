@@ -1,9 +1,14 @@
+import { nanoid } from "nanoid";
 import { deleteFile, appendFileAsync } from "./file.js";
 
 const currentDir = process.cwd();
-const logFilePath = `${currentDir}\\log.txt`;
+let logFilePath;
 
 let lineNumber = 1;
+
+export const createNewLogFile = () => {
+  logFilePath = `${currentDir}\\log-${nanoid()}.txt`;
+};
 
 export const clearLog = () => {
   deleteFile(logFilePath, "");
