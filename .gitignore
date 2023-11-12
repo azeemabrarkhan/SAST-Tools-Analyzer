@@ -1,5 +1,5 @@
-./log.txt
+log*.txt
+.env
 node_modules
-dataset_old
-dataset_old_old
 datasets
+commitIDs/ossf-jsons
