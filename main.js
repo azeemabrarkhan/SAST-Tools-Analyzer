@@ -151,7 +151,7 @@ const getUserInput = async (question) => {
   });
 };
 
-const scrapSecbench = async (partNumber) => {
+const scrapeSecbench = async (partNumber) => {
   const secbenchData = await csvToArray(
     `${currentDir}\\commitIDs\\secbench${partNumber}.csv`
   );
@@ -173,7 +173,7 @@ const scrapSecbench = async (partNumber) => {
   }
 };
 
-const scrapOssf = async () => {
+const scrapeOssf = async () => {
   const ossfData = readJsonFileSync("commitIDs\\ossf.json");
   let numOfWeaknesses = 0;
 
@@ -215,10 +215,10 @@ const main = async () => {
     switch (parseInt(option)) {
       case 1:
       case 2:
-        await scrapSecbench(option);
+        await scrapeSecbench(option);
         break;
       case 3:
-        await scrapOssf();
+        await scrapeOssf();
         break;
       case 4:
         const path = await getUserInput(
