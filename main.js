@@ -25,7 +25,7 @@ const MENU_TEXT = `\nChoose from the following options.
 let vulnerablityCount = 0;
 let fileNumber = 0;
 
-const processCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
+const processSecbenchCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
   const commitUrl = `${baseUrl}/commits/${sha}`;
   makeDir(vulPath);
   makeDir(fixPath);
@@ -41,8 +41,8 @@ const processCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
           .map((file) => file.filename);
 
         for (const fileName of fileNames) {
-          console.log(`${fileNumber} - ${fileName}`);
           fileNumber++;
+          console.log(`${fileNumber} - ${fileName}`);
           const splitFileName = fileName.split("/");
           const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${shaV}`;
           const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${sha}`;
@@ -98,6 +98,51 @@ const processCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
   });
 };
 
+const processOssfCommit = async (
+  baseUrl,
+  vulPath,
+  fixPath,
+  shaV,
+  sha,
+  fileName
+) => {
+  makeDir(vulPath);
+  makeDir(fixPath);
+
+  fileNumber++;
+  console.log(`${fileNumber} - ${fileName}`);
+  const splitFileName = fileName.split("/");
+  const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${shaV}`;
+  const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${sha}`;
+
+  return fetchFile(vulFileUrl)
+    .then((text) =>
+      writeFileAsync(
+        `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
+        text
+      )
+    )
+    .catch((err) => {
+      log(
+        `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
+      );
+    })
+    .then(() =>
+      fetchFile(fixFileUrl)
+        .then((text) => {
+          writeFileAsync(
+            `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
+            text
+          );
+        })
+        .catch((err) => {
+          log(
+            `ERROR, while fetching post-fix file from the url: ${fixFileUrl} - error trace: ${err}`
+          );
+        })
+    );
+};
+
 const getUserInput = async (question) => {
   return new Promise((resolve) => {
     rl.question(question, (answer) => {
@@ -118,7 +163,7 @@ const scrapSecbench = async (partNumber) => {
     const vulPath = `${currentDir}\\datasets\\secbench\\vul\\${secbenchCommit.language}\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.owner}\\${secbenchCommit.project}\\${vulnerablityCount}\\${secbenchCommit["sha-p"]}`;
     const fixPath = `${currentDir}\\datasets\\secbench\\fix\\${secbenchCommit.language}\\${secbenchCommit["cwe_id"]}\\${secbenchCommit.owner}\\${secbenchCommit.project}\\${vulnerablityCount}\\${secbenchCommit.sha}`;
 
-    await processCommit(
+    await processSecbenchCommit(
       baseUrl,
       vulPath,
       fixPath,
@@ -151,12 +196,13 @@ const scrapOssf = async () => {
       ossfCommit.postPatch.commit
     }`;
 
-    await processCommit(
+    await processOssfCommit(
       baseUrl,
       vulPath,
       fixPath,
       ossfCommit.prePatch.commit,
-      ossfCommit.postPatch.commit
+      ossfCommit.postPatch.commit,
+      ossfCommit.prePatch.weaknesses[0].location.file
     );
   }
 };
