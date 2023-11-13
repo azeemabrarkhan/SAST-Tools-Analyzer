@@ -122,24 +122,24 @@ const processOssfCommit = async (
         text
       )
     )
-    .catch((err) => {
+    .catch((err) =>
       log(
         `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
-      );
-    })
+      )
+    )
     .then(() =>
       fetchFile(fixFileUrl)
-        .then((text) => {
+        .then((text) =>
           writeFileAsync(
             `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
             text
-          );
-        })
-        .catch((err) => {
+          )
+        )
+        .catch((err) =>
           log(
             `ERROR, while fetching post-fix file from the url: ${fixFileUrl} - error trace: ${err}`
-          );
-        })
+          )
+        )
     );
 };
 
