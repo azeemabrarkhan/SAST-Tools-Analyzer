@@ -56,7 +56,7 @@ const processSecbenchCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
             )
             .catch((err) => {
               log(
-                `ERROR, while fetching file from the url: ${vulFileUrl} - message: ${commitData.message} - error trace: ${err}`
+                `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
               );
               resolve();
             });
@@ -73,7 +73,7 @@ const processSecbenchCommit = async (baseUrl, vulPath, fixPath, shaV, sha) => {
             })
             .catch((err) => {
               log(
-                `ERROR, while fetching file from the url: ${fixFileUrl} - message: ${commitData.message} - error trace: ${err}`
+                `ERROR, while fetching post-fix file from the url: ${fixFileUrl} - error trace: ${err}`
               );
               resolve();
             });
