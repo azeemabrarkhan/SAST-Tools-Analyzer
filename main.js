@@ -104,7 +104,8 @@ const processOssfCommit = async (
   fixPath,
   shaV,
   sha,
-  fileName
+  fileName,
+  weaknessesString
 ) => {
   makeDir(vulPath);
   makeDir(fixPath);
@@ -116,12 +117,13 @@ const processOssfCommit = async (
   const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${sha}`;
 
   return fetchFile(vulFileUrl)
-    .then((text) =>
+    .then((text) => {
       writeFileAsync(
         `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
         text
-      )
-    )
+      );
+      writeFileAsync(`${vulPath}\\weaknesses.txt`, weaknessesString);
+    })
     .catch((err) =>
       log(
         `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
@@ -129,12 +131,13 @@ const processOssfCommit = async (
     )
     .then(() =>
       fetchFile(fixFileUrl)
-        .then((text) =>
+        .then((text) => {
           writeFileAsync(
             `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
             text
-          )
-        )
+          );
+          writeFileAsync(`${fixPath}\\weaknesses.txt`, weaknessesString);
+        })
         .catch((err) =>
           log(
             `ERROR, while fetching post-fix file from the url: ${fixFileUrl} - error trace: ${err}`
@@ -171,15 +174,14 @@ const scrapeSecbench = async (partNumber) => {
       secbenchCommit.sha
     );
   }
+  fileNumber = 0;
+  vulnerablityCount = 0;
 };
 
 const scrapeOssf = async () => {
   const ossfData = readJsonFileSync("commitIDs\\ossf.json");
-  let numOfWeaknesses = 0;
-
   for (const ossfCommit of ossfData) {
     vulnerablityCount++;
-    numOfWeaknesses += ossfCommit.prePatch.weaknesses.length;
 
     const splittedUrl = ossfCommit.repository.split("/");
     const ownerAndProject = `${splittedUrl[3]}/${splittedUrl[4].split(".")[0]}`;
@@ -202,9 +204,12 @@ const scrapeOssf = async () => {
       fixPath,
       ossfCommit.prePatch.commit,
       ossfCommit.postPatch.commit,
-      ossfCommit.prePatch.weaknesses[0].location.file
+      ossfCommit.prePatch.weaknesses[0].location.file,
+      JSON.stringify(ossfCommit.prePatch.weaknesses, null, 2)
     );
   }
+  fileNumber = 0;
+  vulnerablityCount = 0;
 };
 
 const main = async () => {
