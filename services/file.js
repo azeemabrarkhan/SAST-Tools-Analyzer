@@ -48,6 +48,16 @@ export const appendFileAsync = (filePath, fileContentString) => {
   });
 };
 
+export const appendFile = (filePath, fileContentString) => {
+  try {
+    fs.appendFileSync(filePath, fileContentString);
+  } catch (err) {
+    log(
+      `ERROR, while synchronously appending message '${fileContentString}' to a file at ${filePath} - error trace: ${err}`
+    );
+  }
+};
+
 export const csvToArray = (filePath) => {
   return new Promise((resolve) => {
     const result = [];
