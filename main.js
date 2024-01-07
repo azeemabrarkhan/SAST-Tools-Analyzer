@@ -156,7 +156,7 @@ const getUserInput = async (question) => {
 
 const scrapeSecbench = async (partNumber) => {
   const secbenchData = await csvToArray(
-    `${currentDir}\\commitIDs\\secbench${partNumber}.csv`
+    `${currentDir}\\repositories\\secbench\\secbench${partNumber}.csv`
   );
   for (const secbenchCommit of secbenchData) {
     vulnerablityCount++;
@@ -179,7 +179,7 @@ const scrapeSecbench = async (partNumber) => {
 };
 
 const scrapeOssf = async () => {
-  const ossfData = readJsonFileSync("commitIDs\\ossf.json");
+  const ossfData = readJsonFileSync("repositories\\ossf\\ossf.json");
   for (const ossfCommit of ossfData) {
     vulnerablityCount++;
 

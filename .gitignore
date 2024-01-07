@@ -2,4 +2,4 @@ log*.txt
 .env
 node_modules
 datasets
-commitIDs/ossf-jsons
+repositories/ossf/individual-jsons
