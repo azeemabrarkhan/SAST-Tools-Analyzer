@@ -1,17 +1,8 @@
-import { fetchCommit, fetchFile } from "./services/http.js";
-import {
-  makeDir,
-  writeFileAsync,
-  csvToArray,
-  mergeJsonFiles,
-  readJsonFileSync,
-} from "./services/file.js";
-import { log, createNewLogFile } from "./services/logger.js";
+import { mergeJsonFiles } from "./services/file.js";
 import readline from "readline";
 import Secbench from "./repositories/secbench/secbench.js";
 import Ossf from "./repositories/ossf/ossf.js";
 
-const currentDir = process.cwd();
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
