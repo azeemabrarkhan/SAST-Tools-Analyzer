@@ -52,6 +52,12 @@ export const csvToArray = (filePath) => {
   return new Promise((resolve) => {
     const result = [];
     fs.createReadStream(filePath)
+      .on("error", (err) => {
+        log(
+          `ERROR, while reading csv file at ${filePath} - error trace: ${err}`
+        );
+        resolve([]);
+      })
       .pipe(csv())
       .on("data", (row) => {
         result.push(row);
