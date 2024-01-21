@@ -1,6 +1,5 @@
 import {
   writeFile,
-  appendFile,
   makeDir,
   readJsonFileSync,
   writeFileAsync,
@@ -11,17 +10,15 @@ import { createNewLogFile, log } from "../../services/logger.js";
 export default class Ossf {
   vulnerablityCount;
   currentDir;
+  metaData;
   metaDataFilePath;
 
   constructor() {
     createNewLogFile();
     this.vulnerablityCount = 0;
     this.currentDir = process.cwd();
-    this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.csv`;
-    writeFile(
-      this.metaDataFilePath,
-      `CVE, CWEs, repository, prePatch, postPatch, vulPath, fixPath, lineNumber, explanation`
-    );
+    this.metaData = [];
+    this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.json`;
   }
 
   scrape = async () => {
@@ -50,37 +47,50 @@ export default class Ossf {
 
       this.recordMetaData(commit, ownerAndProject);
 
-      await this.processCommit(
-        baseUrl,
-        vulPath,
-        fixPath,
-        commit.prePatch.commit,
-        commit.postPatch.commit,
-        commit.prePatch.weaknesses[0].location.file,
-        JSON.stringify(commit.prePatch.weaknesses, null, 2)
-      );
+      // await this.processCommit(
+      //   baseUrl,
+      //   vulPath,
+      //   fixPath,
+      //   commit.prePatch.commit,
+      //   commit.postPatch.commit,
+      //   commit.prePatch.weaknesses[0].location.file,
+      //   JSON.stringify(commit.prePatch.weaknesses, null, 2)
+      // );
     }
+    writeFile(this.metaDataFilePath, JSON.stringify(this.metaData, null, 4));
     this.vulnerablityCount = 0;
   };
 
   recordMetaData = (commit, ownerAndProject) => {
     const { CVE, CWEs, repository, prePatch, postPatch } = commit;
+    // `CVE, CWEs, repository, prePatch, postPatch, vulPath, fixPath, lineNumber, explanation`
 
-    const vulPath = `/vul/${CVE}/${ownerAndProject}/${this.vulnerablityCount}/${prePatch.commit}`;
-    const fixPath = `/fix/${CVE}/${ownerAndProject}/${this.vulnerablityCount}/${commit.postPatch.commit}`;
-
+    const metaInfo = {
+      CVE,
+      CWEs,
+      repository,
+      prePatch: prePatch.commit,
+      postPatch: postPatch.commit,
+      vulPath: "",
+      fixPath: "",
+      lineNumber: 0,
+      explanation: "",
+    };
     for (let i = 0; i < prePatch.weaknesses.length; i++) {
       const splitFileName = prePatch.weaknesses[i].location.file.split("/");
-      appendFile(
-        this.metaDataFilePath,
-        `\n${CVE}, ${String(CWEs).replaceAll(",", "-")}, ${repository}, ${
-          prePatch.commit
-        }, ${postPatch.commit}, ${vulPath}/${
-          splitFileName[splitFileName.length - 1]
-        }, ${fixPath}/${splitFileName[splitFileName.length - 1]}, ${
-          prePatch.weaknesses[i].location.line
-        }, ${prePatch.weaknesses[i].explanation}`
-      );
+
+      metaInfo.vulPath = `/vul/${CVE}/${ownerAndProject}/${
+        this.vulnerablityCount
+      }/${prePatch.commit}/${splitFileName[splitFileName.length - 1]}`;
+
+      metaInfo.fixPath = `/fix/${CVE}/${ownerAndProject}/${
+        this.vulnerablityCount
+      }/${commit.postPatch.commit}/${splitFileName[splitFileName.length - 1]}`;
+
+      metaInfo.lineNumber = prePatch.weaknesses[i].location.line;
+      metaInfo.explanation = prePatch.weaknesses[i].explanation;
+
+      this.metaData.push(metaInfo);
     }
   };
 
