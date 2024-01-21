@@ -1,4 +1,4 @@
-import { mergeJsonFiles } from "./services/file.js";
+import { mergeJsonFiles, readJsonFileSync } from "./services/file.js";
 import readline from "readline";
 import Secbench from "./repositories/secbench/secbench.js";
 import Ossf from "./repositories/ossf/ossf.js";
@@ -52,6 +52,10 @@ const main = async () => {
 };
 
 main();
+
+// console.log(
+//   readJsonFileSync(`${process.cwd()}\\repositories\\ossf\\metaData.json`).length
+// );
 
 function printRecursiveObject(obj, indent = 0) {
   const spaces = " ".repeat(indent * 2);

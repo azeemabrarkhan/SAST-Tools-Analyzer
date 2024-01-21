@@ -32,6 +32,7 @@ export default class Ossf {
       await this.processCommit(commit);
     }
 
+    console.log("length = ", this.metaData.length);
     writeFile(this.metaDataFilePath, JSON.stringify(this.metaData, null, 4));
     this.vulnerablityCount = 0;
   };
@@ -132,7 +133,6 @@ export default class Ossf {
 
     return fetchFile(vulFileUrl)
       .then((text) => {
-        this.createMetaObj(commit, ownerAndProject, text);
         writeFileAsync(
           `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
           text
@@ -141,12 +141,22 @@ export default class Ossf {
           `${vulPath}\\weaknesses.txt`,
           JSON.stringify(prePatch.weaknesses, null, 2)
         );
+        return text;
       })
       .catch((err) =>
         log(
           `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
         )
       )
+      .then((sourceCode) => {
+        try {
+          this.createMetaObj(commit, ownerAndProject, sourceCode);
+        } catch (err) {
+          log(
+            `ERROR, while splitting source file into functions - ${commit.repository} - error trace: ${err}`
+          );
+        }
+      })
       .then(() =>
         fetchFile(fixFileUrl)
           .then((text) => {
