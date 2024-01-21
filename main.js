@@ -55,24 +55,6 @@ const main = async () => {
 
 main();
 
-const source = "const answer = 42";
-// const tree = new AbstractSyntaxTree(
-//   fs.readFileSync(
-//     `datasets\\ossf_f - Copy\\vul\\CVE-2016-10735\\twbs\\bootstrap\\2\\ba6a6f13691000ffaf22ef8e731513737659447f\\util.js`,
-//     "utf-8"
-//   )
-// );
-const tree = new AbstractSyntaxTree(`const add = async () => {
-  const a = await 1;
-  const b = 2;
-  const c = a + b;
-  return c;
-}`);
-// printRecursiveObject(tree.find("FunctionDeclaration").length); // [ { type: 'Literal', value: 42 } ]
-// printRecursiveObject(tree.find("FunctionExpression")[0]); // [ { type: 'Literal', value: 42 } ]
-// printRecursiveObject(tree.find("ArrowFunctionExpression")[1]); // [ { type: 'Literal', value: 42 } ]
-printRecursiveObject(tree.find("AwaitExpression")[0]); // [ { type: 'Literal', value: 42 } ]
-
 function printRecursiveObject(obj, indent = 0) {
   const spaces = " ".repeat(indent * 2);
 
