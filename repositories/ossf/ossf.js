@@ -6,6 +6,7 @@ import {
 } from "../../services/file.js";
 import { fetchFile } from "../../services/http.js";
 import { createNewLogFile, log } from "../../services/logger.js";
+import AbstractSyntaxTree from "abstract-syntax-tree";
 
 export default class Ossf {
   vulnerablityCount;
@@ -25,23 +26,49 @@ export default class Ossf {
     const data = readJsonFileSync(
       `${this.currentDir}\\repositories\\ossf\\ossf.json`
     );
+
     for (const commit of data) {
       this.vulnerablityCount++;
-
-      const splittedUrl = commit.repository.split("/");
-      const ownerAndProject = `${splittedUrl[3]}/${
-        splittedUrl[4].split(".")[0]
-      }`;
-
-      this.recordMetaData(commit, ownerAndProject);
-      await this.processCommit(commit, ownerAndProject);
+      await this.processCommit(commit);
     }
+
     writeFile(this.metaDataFilePath, JSON.stringify(this.metaData, null, 4));
     this.vulnerablityCount = 0;
   };
 
-  recordMetaData = (commit, ownerAndProject) => {
+  createMetaObj = (commit, ownerAndProject, sourceCode) => {
+    const tree = new AbstractSyntaxTree(sourceCode);
+
+    const functionDeclarations = tree
+      .find("FunctionDeclaration")
+      .map((node) => ({
+        type: "FunctionDeclaration",
+        startLine: node?.loc?.start?.line,
+        endLine: node?.loc?.end?.line,
+      }));
+    const functionExpressions = tree.find("FunctionExpression").map((node) => ({
+      type: "FunctionExpression",
+      startLine: node?.loc?.start?.line,
+      endLine: node?.loc?.end?.line,
+    }));
+    const arrowFunctionExpressions = tree
+      .find("ArrowFunctionExpression")
+      .map((node) => ({
+        type: "ArrowFunctionExpression",
+        startLine: node?.loc?.start?.line,
+        endLine: node?.loc?.end?.line,
+      }));
+
+    const functionsInVul = [
+      ...functionDeclarations,
+      ...functionExpressions,
+      ...arrowFunctionExpressions,
+    ]
+      .sort((a, b) => a.startLine - b.startLine)
+      .map((f, index) => ({ name: `function${index}`, ...f }));
+
     const { CVE, CWEs, repository, prePatch, postPatch } = commit;
+
     const metaInfo = {
       CVE,
       CWEs,
@@ -52,7 +79,9 @@ export default class Ossf {
       fixPath: "",
       lineNumber: 0,
       explanation: "",
+      functionsInVul,
     };
+
     for (let i = 0; i < prePatch.weaknesses.length; i++) {
       const splitFileName = prePatch.weaknesses[i].location.file.split("/");
 
@@ -71,8 +100,11 @@ export default class Ossf {
     }
   };
 
-  processCommit = async (commit, ownerAndProject) => {
-    const { CVE, prePatch, postPatch } = commit;
+  processCommit = async (commit) => {
+    const { CVE, repository, prePatch, postPatch } = commit;
+
+    const splittedUrl = repository.split("/");
+    const ownerAndProject = `${splittedUrl[3]}/${splittedUrl[4].split(".")[0]}`;
 
     const vulPath = `${
       this.currentDir
@@ -100,6 +132,7 @@ export default class Ossf {
 
     return fetchFile(vulFileUrl)
       .then((text) => {
+        this.createMetaObj(commit, ownerAndProject, text);
         writeFileAsync(
           `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
           text
