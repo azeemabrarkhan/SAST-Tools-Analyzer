@@ -10,14 +10,12 @@ import { createNewLogFile, log } from "../../services/logger.js";
 
 export default class Ossf {
   vulnerablityCount;
-  fileNumber;
   currentDir;
   metaDataFilePath;
 
   constructor() {
     createNewLogFile();
     this.vulnerablityCount = 0;
-    this.fileNumber = 0;
     this.currentDir = process.cwd();
     this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.csv`;
     writeFile(
@@ -62,7 +60,6 @@ export default class Ossf {
         JSON.stringify(commit.prePatch.weaknesses, null, 2)
       );
     }
-    this.fileNumber = 0;
     this.vulnerablityCount = 0;
   };
 
@@ -99,8 +96,7 @@ export default class Ossf {
     makeDir(vulPath);
     makeDir(fixPath);
 
-    this.fileNumber++;
-    console.log(`${this.fileNumber} - ${fileName}`);
+    console.log(`${this.vulnerablityCount} - ${fileName}`);
     const splitFileName = fileName.split("/");
     const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${shaV}`;
     const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${sha}`;
