@@ -2,8 +2,6 @@ import { mergeJsonFiles } from "./services/file.js";
 import readline from "readline";
 import Secbench from "./repositories/secbench/secbench.js";
 import Ossf from "./repositories/ossf/ossf.js";
-import AbstractSyntaxTree from "abstract-syntax-tree";
-import fs from "fs";
 
 const rl = readline.createInterface({
   input: process.stdin,
