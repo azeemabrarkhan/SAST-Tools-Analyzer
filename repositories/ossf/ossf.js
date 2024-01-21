@@ -1,4 +1,6 @@
 import {
+  writeFile,
+  appendFile,
   makeDir,
   readJsonFileSync,
   writeFileAsync,
@@ -10,12 +12,18 @@ export default class Ossf {
   vulnerablityCount;
   fileNumber;
   currentDir;
+  metaDataFilePath;
 
   constructor() {
     createNewLogFile();
     this.vulnerablityCount = 0;
     this.fileNumber = 0;
     this.currentDir = process.cwd();
+    this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.csv`;
+    writeFile(
+      this.metaDataFilePath,
+      `CVE, CWEs, repository, prePatch, postPatch, vulPath, fixPath, lineNumber, explanation`
+    );
   }
 
   scrape = async () => {
@@ -42,6 +50,8 @@ export default class Ossf {
         commit.postPatch.commit
       }`;
 
+      this.recordMetaData(commit, ownerAndProject);
+
       await this.processCommit(
         baseUrl,
         vulPath,
@@ -54,6 +64,27 @@ export default class Ossf {
     }
     this.fileNumber = 0;
     this.vulnerablityCount = 0;
+  };
+
+  recordMetaData = (commit, ownerAndProject) => {
+    const { CVE, CWEs, repository, prePatch, postPatch } = commit;
+
+    const vulPath = `/vul/${CVE}/${ownerAndProject}/${this.vulnerablityCount}/${prePatch.commit}`;
+    const fixPath = `/fix/${CVE}/${ownerAndProject}/${this.vulnerablityCount}/${commit.postPatch.commit}`;
+
+    for (let i = 0; i < prePatch.weaknesses.length; i++) {
+      const splitFileName = prePatch.weaknesses[i].location.file.split("/");
+      appendFile(
+        this.metaDataFilePath,
+        `\n${CVE}, ${String(CWEs).replaceAll(",", "-")}, ${repository}, ${
+          prePatch.commit
+        }, ${postPatch.commit}, ${vulPath}/${
+          splitFileName[splitFileName.length - 1]
+        }, ${fixPath}/${splitFileName[splitFileName.length - 1]}, ${
+          prePatch.weaknesses[i].location.line
+        }, ${prePatch.weaknesses[i].explanation}`
+      );
+    }
   };
 
   processCommit = async (
