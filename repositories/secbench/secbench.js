@@ -4,13 +4,11 @@ import { createNewLogFile, log } from "../../services/logger.js";
 
 export default class Secbench {
   vulnerablityCount;
-  fileNumber;
   currentDir;
 
   constructor() {
     createNewLogFile();
     this.vulnerablityCount = 0;
-    this.fileNumber = 0;
     this.currentDir = process.cwd();
   }
 
@@ -34,7 +32,6 @@ export default class Secbench {
         commit.sha
       );
     }
-    this.fileNumber = 0;
     this.vulnerablityCount = 0;
   };
 
@@ -54,8 +51,7 @@ export default class Secbench {
             .map((file) => file.filename);
 
           for (const fileName of fileNames) {
-            this.fileNumber++;
-            console.log(`${this.fileNumber} - ${fileName}`);
+            console.log(`${this.vulnerablityCount} - ${fileName}`);
             const splitFileName = fileName.split("/");
             const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${shaV}`;
             const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${sha}`;
