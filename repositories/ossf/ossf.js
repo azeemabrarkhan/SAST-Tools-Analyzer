@@ -32,30 +32,9 @@ export default class Ossf {
       const ownerAndProject = `${splittedUrl[3]}/${
         splittedUrl[4].split(".")[0]
       }`;
-      const baseUrl = `https://api.github.com/repos/${ownerAndProject}`;
-
-      const vulPath = `${this.currentDir}\\datasets\\ossf\\vul\\${
-        commit.CVE
-      }\\${ownerAndProject.replace("/", "\\")}\\${this.vulnerablityCount}\\${
-        commit.prePatch.commit
-      }`;
-      const fixPath = `${this.currentDir}\\datasets\\ossf\\fix\\${
-        commit.CVE
-      }\\${ownerAndProject.replace("/", "\\")}\\${this.vulnerablityCount}\\${
-        commit.postPatch.commit
-      }`;
 
       this.recordMetaData(commit, ownerAndProject);
-
-      // await this.processCommit(
-      //   baseUrl,
-      //   vulPath,
-      //   fixPath,
-      //   commit.prePatch.commit,
-      //   commit.postPatch.commit,
-      //   commit.prePatch.weaknesses[0].location.file,
-      //   JSON.stringify(commit.prePatch.weaknesses, null, 2)
-      // );
+      await this.processCommit(commit, ownerAndProject);
     }
     writeFile(this.metaDataFilePath, JSON.stringify(this.metaData, null, 4));
     this.vulnerablityCount = 0;
@@ -63,8 +42,6 @@ export default class Ossf {
 
   recordMetaData = (commit, ownerAndProject) => {
     const { CVE, CWEs, repository, prePatch, postPatch } = commit;
-    // `CVE, CWEs, repository, prePatch, postPatch, vulPath, fixPath, lineNumber, explanation`
-
     const metaInfo = {
       CVE,
       CWEs,
@@ -94,22 +71,32 @@ export default class Ossf {
     }
   };
 
-  processCommit = async (
-    baseUrl,
-    vulPath,
-    fixPath,
-    shaV,
-    sha,
-    fileName,
-    weaknessesString
-  ) => {
+  processCommit = async (commit, ownerAndProject) => {
+    const { CVE, prePatch, postPatch } = commit;
+
+    const vulPath = `${
+      this.currentDir
+    }\\datasets\\ossf\\vul\\${CVE}\\${ownerAndProject.replace("/", "\\")}\\${
+      this.vulnerablityCount
+    }\\${prePatch.commit}`;
+
+    const fixPath = `${
+      this.currentDir
+    }\\datasets\\ossf\\fix\\${CVE}\\${ownerAndProject.replace("/", "\\")}\\${
+      this.vulnerablityCount
+    }\\${postPatch.commit}`;
+
     makeDir(vulPath);
     makeDir(fixPath);
 
+    const fileName = prePatch.weaknesses[0].location.file;
     console.log(`${this.vulnerablityCount} - ${fileName}`);
+
+    const baseUrl = `https://api.github.com/repos/${ownerAndProject}`;
+    const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${prePatch.commit}`;
+    const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${postPatch.commit}`;
+
     const splitFileName = fileName.split("/");
-    const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${shaV}`;
-    const fixFileUrl = `${baseUrl}/contents/${fileName}?ref=${sha}`;
 
     return fetchFile(vulFileUrl)
       .then((text) => {
@@ -117,7 +104,10 @@ export default class Ossf {
           `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
           text
         );
-        writeFileAsync(`${vulPath}\\weaknesses.txt`, weaknessesString);
+        writeFileAsync(
+          `${vulPath}\\weaknesses.txt`,
+          JSON.stringify(prePatch.weaknesses, null, 2)
+        );
       })
       .catch((err) =>
         log(
@@ -131,7 +121,10 @@ export default class Ossf {
               `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
               text
             );
-            writeFileAsync(`${fixPath}\\weaknesses.txt`, weaknessesString);
+            writeFileAsync(
+              `${fixPath}\\weaknesses.txt`,
+              JSON.stringify(prePatch.weaknesses, null, 2)
+            );
           })
           .catch((err) =>
             log(
