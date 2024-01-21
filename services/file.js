@@ -38,6 +38,14 @@ export const writeFileAsync = (filePath, fileContentString) => {
   });
 };
 
+export const writeFile = (filePath, fileContentString) => {
+  try {
+    fs.writeFileSync(filePath, fileContentString);
+  } catch (err) {
+    log(`ERROR, while writing file at ${filePath} - error trace: ${err}`);
+  }
+};
+
 export const appendFileAsync = (filePath, fileContentString) => {
   fs.appendFile(filePath, fileContentString, (err) => {
     if (err) {
