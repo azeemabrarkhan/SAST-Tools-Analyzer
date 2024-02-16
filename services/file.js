@@ -66,6 +66,19 @@ export const appendFile = (filePath, fileContentString) => {
   }
 };
 
+export const appendFileFromTop = (filePath, fileContentString) => {
+  try {
+    const existingContent = fs.readFileSync(filePath, "utf-8");
+    const updatedContent = fileContentString + existingContent;
+
+    writeFile(filePath, updatedContent);
+  } catch (err) {
+    log(
+      `ERROR, while synchronously appending message '${fileContentString}' to the top-line of the file at ${filePath} - error trace: ${err}`
+    );
+  }
+};
+
 export const csvToArray = (filePath) => {
   return new Promise((resolve) => {
     const result = [];
