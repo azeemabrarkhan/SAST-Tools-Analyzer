@@ -83,22 +83,25 @@ export class sonarqube {
   createFormattedOutput = async (issues) => {
     const formattedResults = [];
     await makeDir("./formattedResults");
+
     for (const issue of issues) {
       const formattedResult = {
+        name: "",
+        description: "",
         vulPath: issue.component.split(`${issue.project}:`)[1],
         lineNumber: issue.line,
         scope: {
           start: issue?.textRange?.startLine,
           end: issue?.textRange?.endLine,
         },
-        type: issue.type === "VULNERABILITY" ? "VULNERABILITY" : "",
+        type: issue.type,
         key: issue.key,
         rule: issue.rule,
         severity: issue.severity,
         message: issue.message,
         effort: issue.effort,
         tags: issue.tags,
-        quickFixAvailable: issue.quickFixAvailable,
+        quickFixAvailable: issue.quickFixAvailable ? "yes" : "no",
       };
 
       formattedResults.push(formattedResult);
