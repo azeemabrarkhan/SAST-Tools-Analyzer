@@ -1,6 +1,5 @@
 import { createNewLogFile, log } from "../services/logger.js";
 import { makeDir, writeFile } from "../services/file.js";
-import { nanoid } from "nanoid";
 
 const baseUrl = `http://localhost:9000/api/issues/search?projectKey=${process.env.SONAR_QUBE_PROJECT_KEY}`;
 const API_LIMIT = 10_000;
@@ -106,7 +105,7 @@ export class sonarqube {
     }
 
     writeFile(
-      `./formattedResults/formattedResult-${nanoid()}.json`,
+      `./formattedResults/formattedResult-sonarqube.json`,
       JSON.stringify(formattedResults, null, 4)
     );
   };
