@@ -3,6 +3,7 @@ import readline from "readline";
 import Secbench from "./repositories/secbench/secbench.js";
 import Ossf from "./repositories/ossf/ossf.js";
 import { sonarqube } from "./tools/sonarqube.js";
+import { CodeQl } from "./tools/codeql.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -55,9 +56,11 @@ const main = async () => {
 // main();
 
 const sonarqubeObj = new sonarqube();
-// const issues1 = await sonarqubeObj.fetchResultsFromServer("BUG");
 const issues2 = await sonarqubeObj.fetchResultsFromServer("VULNERABILITY");
+// const issues1 = await sonarqubeObj.fetchResultsFromServer("BUG");
 // const issues3 = await sonarqubeObj.fetchResultsFromServer("CODE_SMELL");
-console.log(issues2.length);
 
-console.log(issues2[0]);
+const codeql = new CodeQl();
+await codeql.convertCsvToFormattedResult("./datasets/ossf_f - Copy/new.csv");
+
+process.exit();
