@@ -2,7 +2,7 @@ import { createNewLogFile, log } from "../services/logger.js";
 import { makeDir, writeFile } from "../services/file.js";
 import { nanoid } from "nanoid";
 
-const baseUrl = `http://localhost:8000/api/issues/search?projectKey=${process.env.SONAR_QUBE_PROJECT_KEY}`;
+const baseUrl = `http://localhost:9000/api/issues/search?projectKey=${process.env.SONAR_QUBE_PROJECT_KEY}`;
 const API_LIMIT = 10_000;
 const pageSize = 500;
 
@@ -18,14 +18,23 @@ headers.append(
 createNewLogFile();
 
 export class sonarqube {
+  querySonarQubeServer = async (url) => {
+    return fetch(url, {
+      headers,
+    });
+  };
+
   fetchResultsFromServer = async (issueType) => {
-    const totalIssues = (
-      await (
-        await fetch(`${baseUrl}&types=${issueType}`, {
-          headers,
-        })
-      ).json()
-    ).total;
+    let totalIssues;
+    try {
+      const response = await this.querySonarQubeServer(
+        `${baseUrl}&types=${issueType}`
+      );
+      const responseJson = await response.json();
+      totalIssues = responseJson.total;
+    } catch (err) {
+      log(`Error!, while fetching sonar qube issues - error trace: ${err}`);
+    }
 
     let issues = await this.fetchIssuePages(issueType, true);
     if (API_LIMIT < totalIssues && totalIssues <= 2 * API_LIMIT) {
@@ -45,20 +54,26 @@ export class sonarqube {
     let issues = [];
 
     for (let i = 1; i <= API_LIMIT / pageSize; i++) {
-      const sonarqubeResponse = await fetch(
-        `${baseUrl}&types=${issueType}&ps=${pageSize}&p=${i}&asc${inAsc}`,
-        {
-          headers,
-        }
-      );
+      try {
+        const response = await this.querySonarQubeServer(
+          `${baseUrl}&types=${issueType}&ps=${pageSize}&p=${i}&asc${inAsc}`
+        );
 
-      if (sonarqubeResponse.ok) {
-        const sonarqubeData = await sonarqubeResponse.json();
-        if (sonarqubeData.issues.length > 0)
-          issues = [...issues, ...sonarqubeData.issues];
-        else break;
-      } else {
-        log(`Error: ${sonarqubeResponse.statusText}`);
+        if (response.ok) {
+          const sonarqubeData = await response.json();
+          if (sonarqubeData.issues.length > 0)
+            issues = [...issues, ...sonarqubeData.issues];
+          else break;
+        } else {
+          log(
+            `Error!, while fetching sonar qube issues of page ${i}, where page size is ${pageSize} - ${response.statusText}`
+          );
+          break;
+        }
+      } catch (err) {
+        log(
+          `Error!, while fetching sonar qube issues of page ${i}, where page size is ${pageSize}  - error trace: ${err}`
+        );
         break;
       }
     }
