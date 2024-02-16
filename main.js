@@ -1,7 +1,8 @@
-import { mergeJsonFiles, readJsonFileSync } from "./services/file.js";
+import { mergeJsonFiles } from "./services/file.js";
 import readline from "readline";
 import Secbench from "./repositories/secbench/secbench.js";
 import Ossf from "./repositories/ossf/ossf.js";
+import { sonarqube } from "./tools/sonarqube.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -51,22 +52,12 @@ const main = async () => {
   }
 };
 
-main();
+// main();
 
-// console.log(
-//   readJsonFileSync(`${process.cwd()}\\repositories\\ossf\\metaData.json`).length
-// );
+const sonarqubeObj = new sonarqube();
+// const issues1 = await sonarqubeObj.fetchResultsFromServer("BUG");
+const issues2 = await sonarqubeObj.fetchResultsFromServer("VULNERABILITY");
+// const issues3 = await sonarqubeObj.fetchResultsFromServer("CODE_SMELL");
+console.log(issues2.length);
 
-function printRecursiveObject(obj, indent = 0) {
-  const spaces = " ".repeat(indent * 2);
-
-  for (const key in obj) {
-    if (typeof obj[key] === "object" && obj[key] !== null) {
-      console.log(`${spaces}${key}: {`);
-      printRecursiveObject(obj[key], indent + 1);
-      console.log(`${spaces}},`);
-    } else {
-      console.log(`${spaces}${key}: "${obj[key]}",`);
-    }
-  }
-}
+console.log(issues2[0]);

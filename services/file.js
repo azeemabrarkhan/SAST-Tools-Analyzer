@@ -126,7 +126,6 @@ export const mergeJsonFiles = async (dirPath) => {
   fileNames.forEach((fileName, index) => {
     if (path.extname(fileName) === ".json") {
       const filePath = path.join(dirPath, fileName);
-      console.log(filePath);
       const data = readJsonFileSync(filePath);
 
       if (data) combinedData.push(data);
