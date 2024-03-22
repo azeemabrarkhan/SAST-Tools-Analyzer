@@ -28,17 +28,9 @@ export default class Analyzer {
     // found = Hits that are included in the known vul set
     // notFound = Hits that are not included in the known vul set
 
-    // notFound hits in the fix version of the files
-    console.log(
-      notFound.filter((result) => result.vulPath.includes("fix/")).length
-    );
-
     tp = found.filter((foundedResult) => foundedResult.isVulnerable).length;
     fn = metaData.length - tp;
-
-    // Either consider all notFound hits as FP or exclude hits from the fix version of the files
-    // fp = notFound.length;
-    fp = notFound.filter((result) => !result.vulPath.includes("fix/")).length;
+    fp = notFound.length;
 
     const precision = tp / (tp + fp);
     const recall = tp / (tp + fn);
