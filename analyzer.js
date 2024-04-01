@@ -28,19 +28,16 @@ export default class Analyzer {
     // found = Hits that are included in the known vul set
     // notFound = Hits that are not included in the known vul set
 
-    tp = found.filter((foundedResult) => foundedResult.isVulnerable).length;
-    fp = notFound.filter((foundedResult) => foundedResult.isVulnerable).length;
+    tp = found.length;
+    fp = notFound.length;
     fn = metaData.length - tp;
 
     const precision = tp / (tp + fp);
     const recall = tp / (tp + fn);
     const f1 = 2 * ((precision * recall) / (precision + recall));
 
-    console.log(
-      "Total findings ",
-      results.filter((foundedResult) => foundedResult.isVulnerable).length
-    );
-
+    console.log("Total Vulnerabilities", metaData.length);
+    console.log("Total Findings ", results.length);
     console.log("True Positive ", tp);
     console.log("False Positive ", fp);
     console.log("False Negative ", fn);

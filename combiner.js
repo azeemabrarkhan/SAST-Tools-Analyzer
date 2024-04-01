@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import Analyzer from "./analyzer.js";
 import { readJsonFileSync, readDir } from "./services/file.js";
 
@@ -10,7 +11,7 @@ export default class Combiner {
     this.analyzer = new Analyzer();
   }
 
-  evaluateIndividualTool = async (toolName) => {
+  evaluateIndividualTool = async (toolName, analysisLevel) => {
     let toolResult;
 
     switch (toolName) {
@@ -29,13 +30,13 @@ export default class Combiner {
         break;
     }
 
-    for (const vul of toolResult) vul.isVulnerable = true;
     this.analyzer.evaluateResult(toolResult);
   };
 
-  withAndLogic = async () => {
+  withAndLogic = async (analysisLevel) => {
     const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
     let toolResults = new Map();
+    const results = [];
 
     for (let i = 0; i < fileNames.length; i++) {
       const toolResult = readJsonFileSync(
@@ -51,32 +52,40 @@ export default class Combiner {
         const toolResult = toolResults.get(i);
         isVulnerable = toolResult.find(
           (result) => result.vulPath === vul.vulPath
-        );
+        )
+          ? true
+          : false;
       }
-
-      vul.isVulnerable = isVulnerable ? true : false;
+      if (isVulnerable) {
+        results.push(vul);
+      }
     }
 
     console.log("***AND LOGIC***");
-    this.analyzer.evaluateResult(toolResults.get(0));
+    this.analyzer.evaluateResult(results);
   };
 
-  withOrLogic = async () => {
+  withOrLogic = async (analysisLevel) => {
     const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
-    let results = [];
+    let results = new Map();
 
     for (let i = 0; i < fileNames.length; i++) {
       const toolResult = readJsonFileSync(
         `${process.cwd()}\\formattedResults\\${fileNames[i]}`
       );
-      if (toolResult) results = [...results, ...toolResult];
+      if (toolResult) {
+        for (const result of toolResult) {
+          const existingResult = results.get(result.vulPath);
+          if (!existingResult) {
+            results.set(result.vulPath, result);
+          }
+        }
+      }
     }
 
-    for (const vul of results) vul.isVulnerable = true;
-
     console.log("***OR LOGIC***");
-    // this.analyzer.evaluateResult(results);
+    this.analyzer.evaluateResult([...results.values()]);
   };
 
-  withMajorityLogic = async () => {};
+  withMajorityLogic = async (analysisLevel) => {};
 }
