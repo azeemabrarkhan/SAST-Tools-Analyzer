@@ -3,15 +3,52 @@ import Analyzer from "./analyzer.js";
 import { readJsonFileSync, readDir } from "./services/file.js";
 
 export default class Combiner {
-  mode;
+  found;
+  notFound;
+  metaData;
   analyzer;
+  analysisLevel;
 
   constructor() {
-    this.mode = "individual";
+    this.found = [];
+    this.notFound = [];
+    this.metaData = readJsonFileSync(
+      `${process.cwd()}\\repositories\\ossf\\metaData.json`
+    );
     this.analyzer = new Analyzer();
+    this.analysisLevel = "file";
   }
 
-  evaluateIndividualTool = async (toolName, analysisLevel) => {
+  analyzeOnFileLevel = () => {
+    this.analysisLevel = "file";
+  };
+
+  analyzeOnFunctionLevel = () => {
+    this.analysisLevel = "function";
+  };
+
+  analyzeOnLineLevel = () => {
+    this.analysisLevel = "line";
+  };
+
+  setFoundAndNotFound = (results) => {
+    this.found = [];
+    this.notFound = [];
+
+    for (const resultSlice of results) {
+      if (
+        this.metaData.find(
+          (metaSlice) => metaSlice.vulPath === `/${resultSlice.vulPath}`
+        )
+      ) {
+        this.found.push(resultSlice);
+      } else {
+        this.notFound.push(resultSlice);
+      }
+    }
+  };
+
+  evaluateIndividualTool = async (toolName) => {
     let toolResult;
 
     switch (toolName) {
@@ -30,10 +67,11 @@ export default class Combiner {
         break;
     }
 
-    this.analyzer.evaluateResult(toolResult);
+    this.setFoundAndNotFound(toolResult);
+    this.analyzer.evaluateResult(this.found, this.notFound);
   };
 
-  withAndLogic = async (analysisLevel) => {
+  withAndLogic = async () => {
     const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
     let toolResults = new Map();
     const results = [];
@@ -62,10 +100,11 @@ export default class Combiner {
     }
 
     console.log("***AND LOGIC***");
-    this.analyzer.evaluateResult(results);
+    this.setFoundAndNotFound(results);
+    this.analyzer.evaluateResult(this.found, this.notFound);
   };
 
-  withOrLogic = async (analysisLevel) => {
+  withOrLogic = async () => {
     const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
     let results = new Map();
 
@@ -84,8 +123,9 @@ export default class Combiner {
     }
 
     console.log("***OR LOGIC***");
-    this.analyzer.evaluateResult([...results.values()]);
+    this.setFoundAndNotFound([...results.values()]);
+    this.analyzer.evaluateResult(this.found, this.notFound);
   };
 
-  withMajorityLogic = async (analysisLevel) => {};
+  withMajorityLogic = async () => {};
 }
