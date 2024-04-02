@@ -31,6 +31,12 @@ export default class Combiner {
     this.analysisLevel = "line";
   };
 
+  getFunctionNameWithLineNumer = (functions, lineNumber) => {
+    return functions.find(
+      (f) => f.startLine < lineNumber && f.endLine > lineNumber
+    )?.name;
+  };
+
   setFoundAndNotFound = (results) => {
     this.found = [];
     this.notFound = [];
@@ -73,26 +79,56 @@ export default class Combiner {
 
   withAndLogic = async () => {
     const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
-    let toolResults = new Map();
+    let toolResults = [];
     const results = [];
 
     for (let i = 0; i < fileNames.length; i++) {
       const toolResult = readJsonFileSync(
         `${process.cwd()}\\formattedResults\\${fileNames[i]}`
       );
-      if (toolResult) toolResults.set(i, toolResult);
+      if (toolResult) toolResults.push(toolResult);
     }
 
-    for (const vul of toolResults.get(0)) {
+    for (const vul of toolResults[0]) {
       let isVulnerable = true;
 
-      for (let i = 1; i < toolResults.size && isVulnerable; i++) {
-        const toolResult = toolResults.get(i);
-        isVulnerable = toolResult.find(
+      for (let i = 1; i < toolResults.length && isVulnerable; i++) {
+        const toolResult = toolResults[i];
+        const vulInTheSameFileByCurrentTool = toolResult.filter(
           (result) => result.vulPath === vul.vulPath
-        )
-          ? true
-          : false;
+        );
+
+        const functionsInTheCurrentFile = this.metaData.find(
+          (metaSlice) => metaSlice.vulPath === `/${vul.vulPath}`
+        )?.functionsInVul;
+
+        switch (this.analysisLevel) {
+          case "file":
+            isVulnerable = vulInTheSameFileByCurrentTool.length > 0;
+            break;
+          case "function":
+            isVulnerable = vulInTheSameFileByCurrentTool.find(
+              (v) =>
+                this.getFunctionNameWithLineNumer(
+                  functionsInTheCurrentFile,
+                  v.lineNumber
+                ) ===
+                this.getFunctionNameWithLineNumer(
+                  functionsInTheCurrentFile,
+                  vul.lineNumber
+                )
+            )
+              ? true
+              : false;
+            break;
+          case "line":
+            isVulnerable = vulInTheSameFileByCurrentTool.find(
+              (v) => v.lineNumber === vul.lineNumber
+            )
+              ? true
+              : false;
+            break;
+        }
       }
       if (isVulnerable) {
         results.push(vul);
