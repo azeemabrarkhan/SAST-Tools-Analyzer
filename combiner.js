@@ -98,14 +98,16 @@ export default class Combiner {
           (result) => result.vulPath === vul.vulPath
         );
 
-        const functionsInTheCurrentFile = this.metaData.find(
-          (metaSlice) => metaSlice.vulPath === `/${vul.vulPath}`
-        )?.functionsInVul;
+        const functionsInTheCurrentFile =
+          this.metaData.find(
+            (metaSlice) => metaSlice.vulPath === `/${vul.vulPath}`
+          )?.functionsInVul ?? [];
 
         switch (this.analysisLevel) {
           case "file":
             isVulnerable = vulInTheSameFileByCurrentTool.length > 0;
             break;
+
           case "function":
             isVulnerable = vulInTheSameFileByCurrentTool.find(
               (v) =>
@@ -121,6 +123,7 @@ export default class Combiner {
               ? true
               : false;
             break;
+
           case "line":
             isVulnerable = vulInTheSameFileByCurrentTool.find(
               (v) => v.lineNumber === vul.lineNumber
@@ -130,6 +133,7 @@ export default class Combiner {
             break;
         }
       }
+
       if (isVulnerable) {
         results.push(vul);
       }
@@ -142,7 +146,7 @@ export default class Combiner {
 
   withOrLogic = async () => {
     const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
-    let results = new Map();
+    let results = [];
 
     for (let i = 0; i < fileNames.length; i++) {
       const toolResult = readJsonFileSync(
@@ -150,16 +154,56 @@ export default class Combiner {
       );
       if (toolResult) {
         for (const result of toolResult) {
-          const existingResult = results.get(result.vulPath);
+          let existingResult = true;
+
+          const alreadyProcessedVulInTheSameFile = results.filter(
+            (r) => r.vulPath === result.vulPath
+          );
+
+          const functionsInTheCurrentFile =
+            this.metaData.find(
+              (metaSlice) => metaSlice.vulPath === `/${result.vulPath}`
+            )?.functionsInVul ?? [];
+
+          switch (this.analysisLevel) {
+            case "file":
+              existingResult = alreadyProcessedVulInTheSameFile.length > 0;
+              break;
+
+            case "function":
+              existingResult = alreadyProcessedVulInTheSameFile.find(
+                (v) =>
+                  this.getFunctionNameWithLineNumer(
+                    functionsInTheCurrentFile,
+                    v.lineNumber
+                  ) ===
+                  this.getFunctionNameWithLineNumer(
+                    functionsInTheCurrentFile,
+                    result.lineNumber
+                  )
+              )
+                ? true
+                : false;
+              break;
+
+            case "line":
+              existingResult = alreadyProcessedVulInTheSameFile.find(
+                (v) => v.lineNumber === result.lineNumber
+              )
+                ? true
+                : false;
+              break;
+          }
+
           if (!existingResult) {
-            results.set(result.vulPath, result);
+            results.push(result);
           }
         }
       }
     }
 
     console.log("***OR LOGIC***");
-    this.setFoundAndNotFound([...results.values()]);
+    this.setFoundAndNotFound(results);
     this.analyzer.evaluateResult(this.found, this.notFound);
   };
 
