@@ -2,5 +2,5 @@ log*.txt
 .env
 node_modules
 datasets
-repositories/ossf/individual-jsons
+repositories/ossf/metaData.json
 formattedResults/
