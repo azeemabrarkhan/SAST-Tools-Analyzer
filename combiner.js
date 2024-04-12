@@ -42,14 +42,49 @@ export default class Combiner {
     this.notFound = [];
 
     for (const resultSlice of results) {
-      if (
-        this.metaData.find(
-          (metaSlice) => metaSlice.vulPath === `/${resultSlice.vulPath}`
-        )
-      ) {
-        this.found.push(resultSlice);
-      } else {
-        this.notFound.push(resultSlice);
+      const actualVulsInTheCurrentFile = this.metaData.filter(
+        (metaSlice) => metaSlice.vulPath === `/${resultSlice.vulPath}`
+      );
+      switch (this.analysisLevel) {
+        case "file":
+          if (actualVulsInTheCurrentFile.length > 0) {
+            this.found.push(resultSlice);
+          } else {
+            this.notFound.push(resultSlice);
+          }
+          break;
+
+        case "function":
+          if (
+            actualVulsInTheCurrentFile.find(
+              (v) =>
+                this.getFunctionNameWithLineNumer(
+                  v.functionsInVul,
+                  v.lineNumber
+                ) ===
+                this.getFunctionNameWithLineNumer(
+                  v.functionsInVul,
+                  resultSlice.lineNumber
+                )
+            )
+          ) {
+            this.found.push(resultSlice);
+          } else {
+            this.notFound.push(resultSlice);
+          }
+          break;
+
+        case "line":
+          if (
+            actualVulsInTheCurrentFile.find(
+              (v) => v.lineNumber === resultSlice.lineNumber
+            )
+          ) {
+            this.found.push(resultSlice);
+          } else {
+            this.notFound.push(resultSlice);
+          }
+          break;
       }
     }
   };
