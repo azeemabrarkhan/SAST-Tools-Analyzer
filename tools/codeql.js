@@ -37,6 +37,7 @@ export class CodeQl {
         effort: "",
         tags: [],
         quickFixAvailable: "no information",
+        properties: {},
       };
 
       formattedResults.push(formattedResult);

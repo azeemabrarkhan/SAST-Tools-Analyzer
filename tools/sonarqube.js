@@ -102,6 +102,7 @@ export class sonarqube {
         effort: issue.effort,
         tags: issue.tags,
         quickFixAvailable: issue.quickFixAvailable ? "yes" : "no",
+        properties: {},
       };
 
       formattedResults.push(formattedResult);
