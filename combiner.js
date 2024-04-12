@@ -97,21 +97,21 @@ export default class Combiner {
         toolResult = readJsonFileSync(
           `${process.cwd()}\\formattedResults\\formattedResult-codeql.json`
         );
-        console.log("***CODE-QL***");
+        console.log(`***CODE-QL*** - ${this.analysisLevel.toUpperCase()}`);
         break;
 
       case "sonarqube":
         toolResult = readJsonFileSync(
           `${process.cwd()}\\formattedResults\\formattedResult-sonarqube.json`
         );
-        console.log("***SONAR QUBE***");
+        console.log(`***SONAR QUBE*** - ${this.analysisLevel.toUpperCase()}`);
         break;
 
       case "snyk":
         toolResult = readJsonFileSync(
           `${process.cwd()}\\formattedResults\\formattedResult-snyk.json`
         );
-        console.log("***SNYK***");
+        console.log(`***SNYK*** - ${this.analysisLevel.toUpperCase()}`);
         break;
     }
 
@@ -181,7 +181,7 @@ export default class Combiner {
       }
     }
 
-    console.log("***AND LOGIC***");
+    console.log(`***AND LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
     this.setFoundAndNotFound(results);
     this.analyzer.evaluateResult(this.found, this.notFound);
   };
@@ -244,7 +244,7 @@ export default class Combiner {
       }
     }
 
-    console.log("***OR LOGIC***");
+    console.log(`***OR LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
     this.setFoundAndNotFound(results);
     this.analyzer.evaluateResult(this.found, this.notFound);
   };

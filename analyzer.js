@@ -25,5 +25,6 @@ export default class Analyzer {
     console.log("Precision ", precision);
     console.log("Recall ", recall);
     console.log("F1 Score  ", f1);
+    console.log("");
   };
 }
