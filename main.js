@@ -4,6 +4,9 @@ import Secbench from "./repositories/secbench/secbench.js";
 import Ossf from "./repositories/ossf/ossf.js";
 import { sonarqube } from "./tools/sonarqube.js";
 import { CodeQl } from "./tools/codeql.js";
+import Combiner from "./combiner.js";
+import { createNewLogFile } from "./services/logger.js";
+import { Snyk } from "./tools/snyk.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -52,15 +55,47 @@ const main = async () => {
     }
   }
 };
+createNewLogFile();
 
-// main();
+// await main();
 
-const sonarqubeObj = new sonarqube();
-const issues2 = await sonarqubeObj.fetchResultsFromServer("VULNERABILITY");
+// const sonarqubeObj = new sonarqube();
+// const issues2 = await sonarqubeObj.fetchResultsFromServer("VULNERABILITY");
 // const issues1 = await sonarqubeObj.fetchResultsFromServer("BUG");
 // const issues3 = await sonarqubeObj.fetchResultsFromServer("CODE_SMELL");
 
-const codeql = new CodeQl();
-await codeql.convertCsvToFormattedResult("./datasets/ossf_f - Copy/new.csv");
+// const codeql = new CodeQl();
+// await codeql.convertCsvToFormattedResult("./datasets/ossf_f - Copy/new.csv");
+
+// const snyk = new Snyk();
+// await snyk.convertJsonToFormattedResult("./datasets/ossf_f - Copy/snyk.json");
+
+const combiner = new Combiner();
+
+const runCombiner = async () => {
+  await combiner.evaluateIndividualTool("codeql");
+  await combiner.evaluateIndividualTool("snyk");
+  await combiner.evaluateIndividualTool("sonarqube");
+  await combiner.withAndLogic();
+  await combiner.withOrLogic();
+};
+
+// await runCombiner();
+
+// combiner.analyzeOnFunctionLevel();
+// await runCombiner();
+
+// combiner.analyzeOnLineLevel();
+// await runCombiner();
+
+combiner.deselectTool("sonarqube");
+
+await combiner.withAndLogic();
+
+combiner.analyzeOnFunctionLevel();
+await combiner.withAndLogic();
+
+combiner.analyzeOnLineLevel();
+await combiner.withAndLogic();
 
 process.exit();

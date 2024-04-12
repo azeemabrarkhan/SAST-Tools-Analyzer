@@ -8,6 +8,7 @@ export default class Combiner {
   metaData;
   analyzer;
   analysisLevel;
+  selectedToolsNames;
 
   constructor() {
     this.found = [];
@@ -17,7 +18,24 @@ export default class Combiner {
     );
     this.analyzer = new Analyzer();
     this.analysisLevel = "file";
+    this.selectedToolsNames = ["codeql", "sonarqube", "snyk"];
   }
+
+  viewSelectedTools = () => {
+    console.log(this.selectedToolsNames);
+  };
+
+  selectTool = (toolName) => {
+    if (!this.selectedToolsNames.includes(toolName)) {
+      this.selectedToolsNames.push(toolName);
+    }
+  };
+
+  deselectTool = (toolName) => {
+    this.selectedToolsNames = this.selectedToolsNames.filter(
+      (selectedToolName) => selectedToolName !== toolName
+    );
+  };
 
   analyzeOnFileLevel = () => {
     this.analysisLevel = "file";
@@ -120,7 +138,11 @@ export default class Combiner {
   };
 
   withAndLogic = async () => {
-    const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
+    console.log(this.selectedToolsNames);
+    // const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
+    const fileNames = this.selectedToolsNames.map(
+      (selectedToolName) => `formattedResult-${selectedToolName}.json`
+    );
     let toolResults = [];
     const results = [];
 
@@ -187,7 +209,11 @@ export default class Combiner {
   };
 
   withOrLogic = async () => {
-    const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
+    console.log(this.selectedToolsNames);
+    // const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
+    const fileNames = this.selectedToolsNames.map(
+      (selectedToolName) => `formattedResult-${selectedToolName}.json`
+    );
     let results = [];
 
     for (let i = 0; i < fileNames.length; i++) {
