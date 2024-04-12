@@ -71,6 +71,13 @@ export default class Combiner {
         );
         console.log("***SONAR QUBE***");
         break;
+
+      case "snyk":
+        toolResult = readJsonFileSync(
+          `${process.cwd()}\\formattedResults\\formattedResult-snyk.json`
+        );
+        console.log("***SNYK***");
+        break;
     }
 
     this.setFoundAndNotFound(toolResult);
