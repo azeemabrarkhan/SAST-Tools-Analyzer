@@ -3,6 +3,7 @@ import {
   makeDir,
   readJsonFileSync,
   writeFileAsync,
+  deleteFile,
 } from "../../services/file.js";
 import { fetchFile } from "../../services/http.js";
 import { createNewLogFile, log } from "../../services/logger.js";
@@ -132,22 +133,17 @@ export default class Ossf {
     const splitFileName = fileName.split("/");
 
     return fetchFile(vulFileUrl)
-      .then((text) => {
+      .then((sourceCode) => {
         writeFileAsync(
           `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
-          text
+          sourceCode
         );
         writeFileAsync(
           `${vulPath}\\weaknesses.txt`,
           JSON.stringify(prePatch.weaknesses, null, 2)
         );
-        return text;
+        return sourceCode;
       })
-      .catch((err) =>
-        log(
-          `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
-        )
-      )
       .then((sourceCode) => {
         try {
           this.createMetaObj(commit, ownerAndProject, sourceCode);
@@ -159,21 +155,29 @@ export default class Ossf {
       })
       .then(() =>
         fetchFile(fixFileUrl)
-          .then((text) => {
+          .then((sourceCode) => {
             writeFileAsync(
               `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
-              text
+              sourceCode
             );
             writeFileAsync(
               `${fixPath}\\weaknesses.txt`,
               JSON.stringify(prePatch.weaknesses, null, 2)
             );
           })
-          .catch((err) =>
+          .catch((err) => {
             log(
               `ERROR, while fetching post-fix file from the url: ${fixFileUrl} - error trace: ${err}`
-            )
-          )
+            );
+            deleteFile(
+              `${vulPath}\\${splitFileName[splitFileName.length - 1]}`
+            );
+          })
+      )
+      .catch((err) =>
+        log(
+          `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
+        )
       );
   };
 }
