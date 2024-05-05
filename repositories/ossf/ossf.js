@@ -10,19 +10,21 @@ import { createNewLogFile, log } from "../../services/logger.js";
 import AbstractSynTree from "../../services/abstractSynTree.js";
 
 export default class Ossf {
-  vulnerablityCount;
   currentDir;
   metaData;
   metaDataFilePath;
+  statsFilePath;
   abstractSyntaxTree;
+  numberOfFilesDownloaded;
 
   constructor() {
     createNewLogFile();
-    this.vulnerablityCount = 0;
     this.currentDir = process.cwd();
     this.metaData = [];
     this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.json`;
+    this.statsFilePath = `${this.currentDir}\\repositories\\ossf\\stats.txt`;
     this.abstractSyntaxTree = new AbstractSynTree();
+    this.numberOfFilesDownloaded = 0;
   }
 
   scrape = async () => {
@@ -30,14 +32,27 @@ export default class Ossf {
       `${this.currentDir}\\repositories\\ossf\\ossf.json`
     );
 
-    for (const commit of data) {
-      this.vulnerablityCount++;
-      await this.processCommit(commit);
-    }
+    const promises = [];
 
-    console.log("length = ", this.metaData.length);
+    data.forEach((commit, index) => {
+      promises.push(this.processCommit(commit, index));
+    });
+
+    await Promise.all(promises);
+
+    const operationStats = `
+    Total number of vulnerablities in records: ${this.metaData.length}
+    Total vulnerable files downloaded: ${this.numberOfFilesDownloaded}
+    Total fix files downloaded: ${this.numberOfFilesDownloaded}
+    Total files downloaded: ${this.numberOfFilesDownloaded * 2}
+
+    There is an additional txt file for every vulnerable and fix file containing meta data regarding vulnerablities.
+    `;
+
+    console.log(operationStats);
+    writeFile(this.statsFilePath, operationStats);
     writeFile(this.metaDataFilePath, JSON.stringify(this.metaData, null, 4));
-    this.vulnerablityCount = 0;
+    this.numberOfFilesDownloaded = 0;
   };
 
   getFileNameWithExt = (location) => {
@@ -47,7 +62,7 @@ export default class Ossf {
     }`;
   };
 
-  createMetaObj = (commit, ownerAndProject, sourceCode) => {
+  createMetaObj = (commit, ownerAndProject, sourceCode, index) => {
     const { CVE, CWEs, repository, prePatch, postPatch } = commit;
 
     const metaInfo = {
@@ -60,7 +75,7 @@ export default class Ossf {
       fixPath: "",
       lineNumber: 0,
       explanation: "",
-      functionsInVul: this.abstractSyntaxTree.getFunctionsLocation(sourceCode),
+      functionsInVul: this.abstractSyntaxTree.getFunctionsLocations(sourceCode),
     };
 
     for (let i = 0; i < prePatch.weaknesses.length; i++) {
@@ -68,9 +83,9 @@ export default class Ossf {
         prePatch.weaknesses[i].location
       );
 
-      metaInfo.vulPath = `/vul/${CVE}/${ownerAndProject}/${this.vulnerablityCount}/${prePatch.commit}/${fileNameWithExt}`;
+      metaInfo.vulPath = `/vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}/${fileNameWithExt}`;
 
-      metaInfo.fixPath = `/fix/${CVE}/${ownerAndProject}/${this.vulnerablityCount}/${commit.postPatch.commit}/${fileNameWithExt}`;
+      metaInfo.fixPath = `/fix/${CVE}/${ownerAndProject}/${index}/${commit.postPatch.commit}/${fileNameWithExt}`;
 
       metaInfo.lineNumber = prePatch.weaknesses[i].location.line;
       metaInfo.explanation = prePatch.weaknesses[i].explanation;
@@ -79,7 +94,7 @@ export default class Ossf {
     }
   };
 
-  processCommit = async (commit) => {
+  processCommit = async (commit, index) => {
     const { CVE, repository, prePatch, postPatch } = commit;
 
     const splittedUrl = repository.split("/");
@@ -87,21 +102,22 @@ export default class Ossf {
 
     const vulPath = `${
       this.currentDir
-    }\\datasets\\ossf\\vul\\${CVE}\\${ownerAndProject.replace("/", "\\")}\\${
-      this.vulnerablityCount
-    }\\${prePatch.commit}`;
+    }\\datasets\\ossf\\vul\\${CVE}\\${ownerAndProject.replace(
+      "/",
+      "\\"
+    )}\\${index}\\${prePatch.commit}`;
 
     const fixPath = `${
       this.currentDir
-    }\\datasets\\ossf\\fix\\${CVE}\\${ownerAndProject.replace("/", "\\")}\\${
-      this.vulnerablityCount
-    }\\${postPatch.commit}`;
+    }\\datasets\\ossf\\fix\\${CVE}\\${ownerAndProject.replace(
+      "/",
+      "\\"
+    )}\\${index}\\${postPatch.commit}`;
 
     makeDir(vulPath);
     makeDir(fixPath);
 
     const fileName = prePatch.weaknesses[0].location.file;
-    console.log(`${this.vulnerablityCount} - ${fileName}`);
 
     const baseUrl = `https://api.github.com/repos/${ownerAndProject}`;
     const vulFileUrl = `${baseUrl}/contents/${fileName}?ref=${prePatch.commit}`;
@@ -111,43 +127,61 @@ export default class Ossf {
       prePatch.weaknesses[0].location
     );
 
-    return fetchFile(vulFileUrl)
+    let isSuccessful = true;
+
+    return fetchFile(fixFileUrl)
       .then((sourceCode) => {
-        writeFileAsync(`${vulPath}\\${fileNameWithExt}`, sourceCode);
+        writeFileAsync(`${fixPath}\\${fileNameWithExt}`, sourceCode);
         writeFileAsync(
-          `${vulPath}\\weaknesses.txt`,
+          `${fixPath}\\weaknesses.txt`,
           JSON.stringify(prePatch.weaknesses, null, 2)
         );
-        return sourceCode;
-      })
-      .then((sourceCode) => {
-        try {
-          this.createMetaObj(commit, ownerAndProject, sourceCode);
-        } catch (err) {
-          log(
-            `ERROR, while splitting source file into functions ${vulPath}\\${fileNameWithExt} - error trace: ${err}`
-          );
-        }
       })
       .then(() =>
-        fetchFile(fixFileUrl)
+        fetchFile(vulFileUrl)
           .then((sourceCode) => {
-            writeFileAsync(`${fixPath}\\${fileNameWithExt}`, sourceCode);
+            writeFileAsync(`${vulPath}\\${fileNameWithExt}`, sourceCode);
             writeFileAsync(
-              `${fixPath}\\weaknesses.txt`,
+              `${vulPath}\\weaknesses.txt`,
               JSON.stringify(prePatch.weaknesses, null, 2)
             );
+            return sourceCode;
+          })
+          .then((sourceCode) => {
+            try {
+              this.createMetaObj(commit, ownerAndProject, sourceCode, index);
+              this.numberOfFilesDownloaded++;
+            } catch (err) {
+              isSuccessful = false;
+              log(
+                `ERROR, while splitting source file into functions ${vulPath}\\${fileNameWithExt} - error trace: ${err}`
+              );
+              deleteFile(`${fixPath}\\${fileNameWithExt}`);
+              deleteFile(`${fixPath}\\weaknesses.txt`);
+              deleteFile(`${vulPath}\\${fileNameWithExt}`);
+              deleteFile(`${vulPath}\\weaknesses.txt`);
+            }
           })
           .catch((err) => {
+            isSuccessful = false;
             log(
-              `ERROR, while fetching post-fix file from the url: ${fixFileUrl} - error trace: ${err}`
+              `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
             );
-            deleteFile(`${vulPath}\\${fileNameWithExt}`);
+            deleteFile(`${fixPath}\\${fileNameWithExt}`);
+            deleteFile(`${fixPath}\\weaknesses.txt`);
           })
       )
-      .catch((err) =>
+      .catch((err) => {
+        isSuccessful = false;
         log(
-          `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
+          `ERROR, while fetching post-fix file from the url: ${fixFileUrl} - error trace: ${err}`
+        );
+      })
+      .finally(() =>
+        console.log(
+          `${
+            isSuccessful ? "SUCCESS" : "FAILED"
+          } - download ${fileName} from ${repository}`
         )
       );
   };
