@@ -53,9 +53,8 @@ export const appendFileAsync = async (filePath, fileContentString) => {
         console.log(
           `ERROR, while appending message '${fileContentString}' to a file at ${filePath} - error trace: ${err}`
         );
-      } else {
-        resolve(); // Resolve without any value
       }
+      resolve();
     });
   });
 };
