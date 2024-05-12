@@ -22,7 +22,7 @@ export default class Ossf {
     this.currentDir = process.cwd();
     this.metaData = [];
     this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.json`;
-    this.statsFilePath = `${this.currentDir}\\repositories\\ossf\\stats.txt`;
+    this.statsFilePath = `${this.currentDir}\\datasets\\ossf\\stats.txt`;
     this.abstractSyntaxTree = new AbstractSynTree();
     this.numberOfFilesDownloaded = 0;
   }
@@ -83,9 +83,9 @@ export default class Ossf {
         prePatch.weaknesses[i].location
       );
 
-      metaInfo.vulPath = `/vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}/${fileNameWithExt}`;
+      metaInfo.vulPath = `vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}/${fileNameWithExt}`;
 
-      metaInfo.fixPath = `/fix/${CVE}/${ownerAndProject}/${index}/${commit.postPatch.commit}/${fileNameWithExt}`;
+      metaInfo.fixPath = `fix/${CVE}/${ownerAndProject}/${index}/${commit.postPatch.commit}/${fileNameWithExt}`;
 
       metaInfo.lineNumber = prePatch.weaknesses[i].location.line;
       metaInfo.explanation = prePatch.weaknesses[i].explanation;

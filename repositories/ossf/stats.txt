@@ -1,8 +1,0 @@
-
-    Total number of vulnerablities in records: 214
-    Total vulnerable files downloaded: 204
-    Total fix files downloaded: 204
-    Total files downloaded: 408
-
-    There is an additional txt file for every vulnerable and fix file containing meta data regarding vulnerablities.
-    

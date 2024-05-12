@@ -61,7 +61,7 @@ export default class Combiner {
 
     for (const resultSlice of results) {
       const actualVulsInTheCurrentFile = this.metaData.filter(
-        (metaSlice) => metaSlice.vulPath === `/${resultSlice.vulPath}`
+        (metaSlice) => metaSlice.vulPath === resultSlice.vulPath
       );
       switch (this.analysisLevel) {
         case "file":
@@ -163,9 +163,8 @@ export default class Combiner {
         );
 
         const functionsInTheCurrentFile =
-          this.metaData.find(
-            (metaSlice) => metaSlice.vulPath === `/${vul.vulPath}`
-          )?.functionsInVul ?? [];
+          this.metaData.find((metaSlice) => metaSlice.vulPath === vul.vulPath)
+            ?.functionsInVul ?? [];
 
         switch (this.analysisLevel) {
           case "file":
@@ -230,7 +229,7 @@ export default class Combiner {
 
           const functionsInTheCurrentFile =
             this.metaData.find(
-              (metaSlice) => metaSlice.vulPath === `/${result.vulPath}`
+              (metaSlice) => metaSlice.vulPath === result.vulPath
             )?.functionsInVul ?? [];
 
           switch (this.analysisLevel) {
