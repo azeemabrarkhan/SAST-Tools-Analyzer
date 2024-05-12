@@ -1,12 +1,10 @@
-import { createNewLogFile, log } from "../services/logger.js";
+import { log } from "../services/logger.js";
 import {
   makeDir,
   writeFile,
   csvToArray,
   appendFileFromTop,
 } from "../services/file.js";
-
-createNewLogFile();
 
 const csvHeader =
   "name,description,severity,message,path,startLine,startColumn,endLine,endColumn\n";

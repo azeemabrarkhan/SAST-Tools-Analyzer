@@ -1,4 +1,4 @@
-import { createNewLogFile, log } from "../services/logger.js";
+import { log } from "../services/logger.js";
 import { makeDir, writeFile } from "../services/file.js";
 
 const baseUrl = `http://localhost:9000/api/issues/search?projectKey=${process.env.SONAR_QUBE_PROJECT_KEY}`;
@@ -13,8 +13,6 @@ headers.append(
       `${process.env.SONAR_QUBE_USERNAME}:${process.env.SONAR_QUBE_PASSWORD}`
     )
 );
-
-createNewLogFile();
 
 export class sonarqube {
   querySonarQubeServer = async (url) => {

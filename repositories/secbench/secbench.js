@@ -1,13 +1,12 @@
 import { csvToArray, makeDir, writeFileAsync } from "../../services/file.js";
 import { fetchCommit, fetchFile } from "../../services/http.js";
-import { createNewLogFile, log } from "../../services/logger.js";
+import { log } from "../../services/logger.js";
 
 export default class Secbench {
   vulnerablityCount;
   currentDir;
 
   constructor() {
-    createNewLogFile();
     this.vulnerablityCount = 0;
     this.currentDir = process.cwd();
   }

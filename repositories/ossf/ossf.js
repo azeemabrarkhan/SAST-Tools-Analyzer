@@ -6,7 +6,7 @@ import {
   deleteFile,
 } from "../../services/file.js";
 import { fetchFile } from "../../services/http.js";
-import { createNewLogFile, log } from "../../services/logger.js";
+import { log } from "../../services/logger.js";
 import AbstractSynTree from "../../services/abstractSynTree.js";
 
 export default class Ossf {
@@ -18,7 +18,6 @@ export default class Ossf {
   numberOfFilesDownloaded;
 
   constructor() {
-    createNewLogFile();
     this.currentDir = process.cwd();
     this.metaData = [];
     this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.json`;

@@ -20,3 +20,5 @@ export const log = (message) => {
   appendFileAsync(logFilePath, `\n${lineNumber} - ${message}`);
   lineNumber++;
 };
+
+createNewLogFile();
