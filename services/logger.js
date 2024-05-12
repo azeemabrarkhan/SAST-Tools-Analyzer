@@ -16,8 +16,8 @@ export const clearLog = () => {
   lineNumber = 1;
 };
 
-export const log = (message) => {
-  appendFileAsync(logFilePath, `\n${lineNumber} - ${message}`);
+export const log = async (message) => {
+  await appendFileAsync(logFilePath, `\n${lineNumber} - ${message}`);
   lineNumber++;
 };
 
