@@ -46,13 +46,18 @@ export const writeFile = (filePath, fileContentString) => {
   }
 };
 
-export const appendFileAsync = (filePath, fileContentString) => {
-  fs.appendFile(filePath, fileContentString, (err) => {
-    if (err) {
-      console.log(
-        `ERROR, while appending message '${fileContentString}' to a file at ${filePath} - error trace: ${err}`
-      );
-    }
+export const appendFileAsync = async (filePath, fileContentString) => {
+  return new Promise((resolve, reject) => {
+    fs.appendFile(filePath, fileContentString, (err) => {
+      if (err) {
+        console.log(
+          `ERROR, while appending message '${fileContentString}' to a file at ${filePath} - error trace: ${err}`
+        );
+        reject(err); // Reject with the error
+      } else {
+        resolve(); // Resolve without any value
+      }
+    });
   });
 };
 
