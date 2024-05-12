@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import Analyzer from "./analyzer.js";
 import { readJsonFileSync, readDir } from "./services/file.js";
 
