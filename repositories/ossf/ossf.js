@@ -20,6 +20,7 @@ export default class Ossf {
   constructor() {
     this.currentDir = process.cwd();
     this.metaData = [];
+    this.datasetFilePath = `${this.currentDir}\\repositories\\ossf\\ossf.json`;
     this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.json`;
     this.statsFilePath = `${this.currentDir}\\datasets\\ossf\\stats.txt`;
     this.abstractSyntaxTree = new AbstractSynTree();
@@ -27,9 +28,7 @@ export default class Ossf {
   }
 
   scrape = async () => {
-    const data = readJsonFileSync(
-      `${this.currentDir}\\repositories\\ossf\\ossf.json`
-    );
+    const data = readJsonFileSync(this.datasetFilePath);
 
     const promises = [];
 
