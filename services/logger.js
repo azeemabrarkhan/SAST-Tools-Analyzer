@@ -6,7 +6,7 @@ let lineNumber;
 
 export const createNewLogFile = () => {
   const date = new Date();
-  logFilePath = `${currentDir}\\log-${date.toDateString()} - HH MM SS ${date.getHours()} ${date.getMinutes()} ${date.getSeconds()}.txt`;
+  logFilePath = `${currentDir}\\log-${date.toDateString()} - ${date.getHours()}hh ${date.getMinutes()}mm ${date.getSeconds()}ss.txt`;
   lineNumber = 1;
 };
 
