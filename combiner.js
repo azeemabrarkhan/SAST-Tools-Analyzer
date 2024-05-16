@@ -49,9 +49,10 @@ export default class Combiner {
   };
 
   getFunctionNameWithLineNumer = (functions, lineNumber) => {
-    return functions.find(
-      (f) => f.startLine < lineNumber && f.endLine > lineNumber
-    )?.name;
+    const fs = functions
+      .filter((f) => f.startLine <= lineNumber && f.endLine >= lineNumber)
+      .sort((fA, fB) => fB.startLine - fA.startLine);
+    return fs[0]?.name;
   };
 
   setFoundAndNotFound = (results) => {
