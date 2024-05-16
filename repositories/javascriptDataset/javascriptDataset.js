@@ -53,7 +53,7 @@ export default class JavascriptDataset {
     writeFile(this.statsFilePath, operationStats);
     writeFile(
       this.metaDataFilePath,
-      JSON.stringify(this.downloadedRecords, null, 4)
+      JSON.stringify(this.downloadedRecords, null, 2)
     );
     this.downloadedRecords = [];
   }
@@ -156,7 +156,9 @@ export default class JavascriptDataset {
         fileName: getFilename(repoPath),
         functions,
         functionsInHierarchicalStructure:
-          convertFunctionsInHierarchicalStructure(functions),
+          convertFunctionsInHierarchicalStructure(
+            functions.map((f) => ({ ...f }))
+          ),
       };
     });
   };
