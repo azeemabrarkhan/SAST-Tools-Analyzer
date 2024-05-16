@@ -1,11 +1,3 @@
-let functions = [
-  { name: "a", startLine: 1, endLine: 20 },
-  { name: "b", startLine: 5, endLine: 7 },
-  { name: "c", startLine: 8, endLine: 14 },
-  { name: "d", startLine: 10, endLine: 12 },
-  { name: "e", startLine: 16, endLine: 20 },
-];
-
 export const convertFunctionsInHierarchicalStructure = (functions) => {
   function getChildrenFunctionsNames(functionsP) {
     let childrenNames = [];
@@ -43,7 +35,3 @@ export const convertFunctionsInHierarchicalStructure = (functions) => {
     (f) => !childrenFunctionNames.find((name) => name === f.name)
   );
 };
-
-console.log(
-  JSON.stringify(convertFunctionsInHierarchicalStructure(functions), null, 4)
-);
