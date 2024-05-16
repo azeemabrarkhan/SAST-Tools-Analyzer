@@ -6,6 +6,7 @@ import {
 } from "../../services/file.js";
 import { fetchFile } from "../../services/http.js";
 import { log } from "../../services/logger.js";
+import { convertFunctionsInHierarchicalStructure } from "../../utils/functions.js";
 
 export default class JavascriptDataset {
   currentDir;
@@ -136,13 +137,8 @@ export default class JavascriptDataset {
       ...new Set(dataset.map((record) => record["full_repo_path"])),
     ];
 
-    return formattedDataset.map((repoPath, index) => ({
-      repoPath,
-      fetchLink: getFetchableFileLink(repoPath),
-      dirPath: getDirPath(repoPath, index),
-      fullFileName: getFullFilename(repoPath),
-      fileName: getFilename(repoPath),
-      functions: dataset
+    return formattedDataset.map((repoPath, index) => {
+      const functions = dataset
         .filter((record) => record["full_repo_path"] === repoPath)
         .sort((a, b) => parseInt(a.line) - parseInt(b.line))
         .map((record, index) => ({
@@ -150,7 +146,18 @@ export default class JavascriptDataset {
           startLine: parseInt(record.line),
           endLine: parseInt(record.endline),
           isVuln: record.Vuln === "1" ? true : false,
-        })),
-    }));
+        }));
+
+      return {
+        repoPath,
+        fetchLink: getFetchableFileLink(repoPath),
+        dirPath: getDirPath(repoPath, index),
+        fullFileName: getFullFilename(repoPath),
+        fileName: getFilename(repoPath),
+        functions,
+        functionsInHierarchicalStructure:
+          convertFunctionsInHierarchicalStructure(functions),
+      };
+    });
   };
 }
