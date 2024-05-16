@@ -6,7 +6,7 @@ import {
 } from "../../services/file.js";
 import { fetchFile } from "../../services/http.js";
 import { log } from "../../services/logger.js";
-import { convertFunctionsInHierarchicalStructure } from "../../utils/functions.js";
+import { getFunctionsInHierarchicalStructure } from "../../utils/functions.js";
 
 export default class JavascriptDataset {
   currentDir;
@@ -155,10 +155,9 @@ export default class JavascriptDataset {
         fullFileName: getFullFilename(repoPath),
         fileName: getFilename(repoPath),
         functions,
-        functionsInHierarchicalStructure:
-          convertFunctionsInHierarchicalStructure(
-            functions.map((f) => ({ ...f }))
-          ),
+        functionsInHierarchicalStructure: getFunctionsInHierarchicalStructure(
+          functions.map((f) => ({ ...f }))
+        ),
       };
     });
   };

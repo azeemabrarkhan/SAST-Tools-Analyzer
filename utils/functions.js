@@ -6,7 +6,7 @@ const testFunctions = [
   { name: "e", startLine: 16, endLine: 20, isVuln: true },
 ];
 
-export const convertFunctionsInHierarchicalStructure = (functions) => {
+export const getFunctionsInHierarchicalStructure = (functions) => {
   function getChildrenFunctionsNames(functionsP) {
     let childrenNames = [];
 
