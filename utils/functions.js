@@ -1,3 +1,11 @@
+const testFunctions = [
+  { name: "a", startLine: 1, endLine: 15, isVuln: true },
+  { name: "b", startLine: 5, endLine: 7, isVuln: false },
+  { name: "c", startLine: 8, endLine: 14, isVuln: false },
+  { name: "d", startLine: 10, endLine: 12, isVuln: false },
+  { name: "e", startLine: 16, endLine: 20, isVuln: true },
+];
+
 export const convertFunctionsInHierarchicalStructure = (functions) => {
   function getChildrenFunctionsNames(functionsP) {
     let childrenNames = [];
@@ -34,4 +42,28 @@ export const convertFunctionsInHierarchicalStructure = (functions) => {
   return functions.filter(
     (f) => !childrenFunctionNames.find((name) => name === f.name)
   );
+};
+
+export const getInnerMostVulnerableFunctions = (functions) => {
+  let vulnerableFunctions = [];
+
+  const processChildren = (functionsP) => {
+    functionsP.forEach((f) => {
+      if (f.isVuln) {
+        vulnerableFunctions.push(f);
+      }
+
+      const currentNumberOfVulnFuncs = vulnerableFunctions.length;
+
+      if (f.children.length > 0) {
+        processChildren(f.children);
+      }
+
+      if (f.isVuln && vulnerableFunctions.length > currentNumberOfVulnFuncs)
+        vulnerableFunctions.splice(currentNumberOfVulnFuncs - 1, 1);
+    });
+  };
+
+  processChildren(functions);
+  return vulnerableFunctions;
 };
