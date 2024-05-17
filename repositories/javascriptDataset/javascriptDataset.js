@@ -43,11 +43,10 @@ export default class JavascriptDataset {
 
     const operationStats = `
     Total files downloaded: ${this.downloadedRecords.length}
-    Total number of functions: ${totalFunctionsCount}
-    Total number of vulnerable functions: ${vulnerableFunctionsCount}
-    Total number of clean functions: ${
-      totalFunctionsCount - vulnerableFunctionsCount
-    }
+    Total number of functions downloaded: ${this.getTotalNumberOfFunctionsDownloaded()}
+    Total number of functions downloaded, which are on file-level (excluding nested functions): ${this.getNumberOfFileLevelFunctions()}
+    Total number of functions downloaded which are marked vulnerable: ${this.getNumberOfVulnerableFunctions()}
+    Total number of functions downloaded which are marked vulnerable and has no vulnerable child function: ${this.getNumberOfInnerMostVulnerableFunctions()}
 
     There is an additional txt file for every downloaded file containing information in json format.
     `;
@@ -58,6 +57,7 @@ export default class JavascriptDataset {
       this.metaDataFilePath,
       JSON.stringify(this.downloadedRecords, null, 2)
     );
+
     this.downloadedRecords = [];
   }
 
@@ -70,6 +70,18 @@ export default class JavascriptDataset {
       .map((r) => r.functions)
       .flat()
       .filter((r) => r.isVuln).length;
+  };
+
+  getNumberOfFileLevelFunctions = () => {
+    return this.downloadedRecords
+      .map((r) => r.functionsInHierarchicalStructure)
+      .flat().length;
+  };
+
+  getNumberOfInnerMostVulnerableFunctions = () => {
+    return this.downloadedRecords
+      .map((r) => r.innerMostVulnerableFunctions)
+      .flat().length;
   };
 
   async processRecord(record) {
