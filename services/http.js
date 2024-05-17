@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const headers = new Headers();
-headers.append("Authorization", process.env.AUTH_TOKEN);
+headers.append("Authorization", process.env.GITHUB_AUTH_TOKEN);
 
 const options = {
   method: "GET",
