@@ -6,7 +6,10 @@ import {
 } from "../../services/file.js";
 import { fetchFile } from "../../services/http.js";
 import { log } from "../../services/logger.js";
-import { getFunctionsInHierarchicalStructure } from "../../utils/functions.js";
+import {
+  getFunctionsInHierarchicalStructure,
+  getInnerMostVulnerableFunctions,
+} from "../../utils/functions.js";
 
 export default class JavascriptDataset {
   currentDir;
@@ -148,6 +151,13 @@ export default class JavascriptDataset {
           isVuln: record.Vuln === "1" ? true : false,
         }));
 
+      const functionsInHierarchicalStructure =
+        getFunctionsInHierarchicalStructure(functions.map((f) => ({ ...f })));
+
+      const innerMostVulnerableFunctions = getInnerMostVulnerableFunctions(
+        functionsInHierarchicalStructure
+      );
+
       return {
         repoPath,
         fetchLink: getFetchableFileLink(repoPath),
@@ -155,9 +165,8 @@ export default class JavascriptDataset {
         fullFileName: getFullFilename(repoPath),
         fileName: getFilename(repoPath),
         functions,
-        functionsInHierarchicalStructure: getFunctionsInHierarchicalStructure(
-          functions.map((f) => ({ ...f }))
-        ),
+        functionsInHierarchicalStructure,
+        innerMostVulnerableFunctions,
       };
     });
   };
