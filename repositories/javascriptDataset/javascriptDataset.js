@@ -6,40 +6,75 @@ import {
 } from "../../services/file.js";
 import { fetchFile } from "../../services/http.js";
 import { log } from "../../services/logger.js";
+import GenerativeAI from "../../services/generativeAI.js";
 import {
   getFunctionsInHierarchicalStructure,
   getInnerMostVulnerableFunctions,
 } from "../../utils/functions.js";
+import { getLinesFromString, removeLinesFromString } from "../../utils/text.js";
+
+const initialAIPrompt = `Code snipets are needed to be analyzed for vulnerability detection. Snipets will be supplied continously. They are needed
+  to be checked for vulnererabilities. Do not provide long answers for every input, instead just provide a detailed summary in the end regarding 
+  the types of vulnerabilities or issues found in the code snipets. Please also include CVE and CWE, if possible.`;
+
+const finalAIPrompt = `All of the code snippets have been provided, now please provide the required summary. 
+  Please also mention the total number of snipets provided, the vulnerable and the clean snipets.`;
 
 export default class JavascriptDataset {
   currentDir;
   datasetFilePath;
   metaDataFilePath;
   statsFilePath;
+  aiChatHistoryPath;
   downloadedRecords;
+  shouldAnalyzeRecordsWithAI;
+  generativeAI;
 
   constructor() {
     this.currentDir = process.cwd();
     this.datasetFilePath = `repositories\\javascriptDataset\\dataset.csv`;
     this.metaDataFilePath = `${this.currentDir}\\repositories\\javascriptDataset\\metaData.json`;
     this.statsFilePath = `${this.currentDir}\\datasets\\javascriptDataset\\stats.txt`;
+    this.aiChatHistoryPath = `${this.currentDir}\\datasets\\javascriptDataset\\aiChatHistory.txt`;
     this.downloadedRecords = [];
+    this.shouldAnalyzeRecordsWithAI = false;
+    this.generativeAI = new GenerativeAI();
   }
 
-  async scrape() {
+  async scrape(shouldAnalyzeRecordsWithAI) {
+    this.shouldAnalyzeRecordsWithAI = shouldAnalyzeRecordsWithAI;
     const dataset = await csvToArray(this.datasetFilePath);
     const formattedDataset = this.getFormattedDataset(dataset);
 
-    const promises = [];
+    if (this.shouldAnalyzeRecordsWithAI) {
+      console.log(`Initial prompt to the AI: ${initialAIPrompt}\n`);
+      const initialResponseFromTheAI = await this.generativeAI.chatWithAI(
+        initialAIPrompt
+      );
+      console.log(
+        `Initial response from the AI: ${initialResponseFromTheAI}\n`
+      );
+    }
 
-    formattedDataset.forEach((record) => {
-      promises.push(this.processRecord(record));
-    });
+    for (const record of [
+      formattedDataset[0],
+      formattedDataset[1],
+      formattedDataset[2],
+      formattedDataset[3],
+      formattedDataset[4],
+    ]) {
+      await this.processRecord(record);
+    }
 
-    await Promise.all(promises);
+    let finalResponseFromTheAI;
 
-    const totalFunctionsCount = this.getTotalNumberOfFunctionsDownloaded();
-    const vulnerableFunctionsCount = this.getNumberOfVulnerableFunctions();
+    if (this.shouldAnalyzeRecordsWithAI) {
+      console.log(`Final prompt to the AI: ${finalAIPrompt}\n`);
+      finalResponseFromTheAI = await this.generativeAI.chatWithAI(
+        finalAIPrompt
+      );
+      console.log(`Final response from the AI: ${finalResponseFromTheAI}\n`);
+    }
 
     const operationStats = `
     Total files downloaded: ${this.downloadedRecords.length}
@@ -49,6 +84,11 @@ export default class JavascriptDataset {
     Total number of functions downloaded which are marked vulnerable and has no vulnerable child function: ${this.getNumberOfInnerMostVulnerableFunctions()}
 
     There is an additional txt file for every downloaded file containing information in json format.
+    ${
+      this.shouldAnalyzeRecordsWithAI && finalResponseFromTheAI
+        ? `\n${finalResponseFromTheAI}`
+        : ""
+    }
     `;
 
     console.log(operationStats);
@@ -57,6 +97,12 @@ export default class JavascriptDataset {
       this.metaDataFilePath,
       JSON.stringify(this.downloadedRecords, null, 2)
     );
+    if (this.shouldAnalyzeRecordsWithAI) {
+      writeFile(
+        this.aiChatHistoryPath,
+        JSON.stringify(await this.generativeAI.getHistory(), null, 2)
+      );
+    }
 
     this.downloadedRecords = [];
   }
@@ -86,11 +132,35 @@ export default class JavascriptDataset {
 
   async processRecord(record) {
     makeDir(record.dirPath);
+    makeDir(record.cleanDirPath);
     let isSuccessful = true;
 
     return fetchFile(record.fetchLink)
       .then((sourceCode) => {
-        writeFileAsync(`${record.dirPath}\\${record.fileName}`, sourceCode);
+        if (this.shouldAnalyzeRecordsWithAI) {
+          const promises = [];
+          for (const func of record.innerMostVulnerableFunctions) {
+            promises.push(
+              this.generativeAI.chatWithAI(
+                getLinesFromString(sourceCode, func.startLine, func.endLine)
+              )
+            );
+          }
+          promises.splice(0, 0, Promise.resolve(sourceCode));
+          return Promise.all(promises);
+        } else {
+          return [sourceCode];
+        }
+      })
+      .then((results) => {
+        if (this.shouldAnalyzeRecordsWithAI && results.length > 1) {
+          record.aiResponses = [...results].splice(0, 1);
+        }
+        writeFileAsync(`${record.dirPath}\\${record.fileName}`, results[0]);
+        writeFileAsync(
+          `${record.cleanDirPath}\\${record.fileName}`,
+          removeLinesFromString(results[0], record.innerMostVulnerableFunctions)
+        );
         writeFileAsync(
           `${record.dirPath}\\record.txt`,
           JSON.stringify(record, null, 2)
@@ -139,10 +209,10 @@ export default class JavascriptDataset {
       )}/contents/${getFullFilename(repoPath)}?ref=${getCommitId(repoPath)}`;
     };
 
-    const getDirPath = (repoPath, index) => {
-      return `${
-        this.currentDir
-      }\\datasets\\javascriptDataset\\${getOwnerAndProject(repoPath).replace(
+    const getDirPath = (repoPath, index, isCleanFilePath) => {
+      return `${this.currentDir}\\datasets\\javascriptDataset${
+        isCleanFilePath ? "-clean" : ""
+      }\\${getOwnerAndProject(repoPath).replace(
         "/",
         "\\"
       )}\\${index}\\${getCommitId(repoPath)}`;
@@ -173,7 +243,8 @@ export default class JavascriptDataset {
       return {
         repoPath,
         fetchLink: getFetchableFileLink(repoPath),
-        dirPath: getDirPath(repoPath, index),
+        dirPath: getDirPath(repoPath, index, false),
+        cleanDirPath: getDirPath(repoPath, index, true),
         fullFileName: getFullFilename(repoPath),
         fileName: getFilename(repoPath),
         functions,
