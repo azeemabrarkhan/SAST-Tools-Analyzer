@@ -100,7 +100,7 @@ export default class JavascriptDataset {
     if (this.shouldAnalyzeRecordsWithAI) {
       writeFile(
         this.aiChatHistoryPath,
-        JSON.stringify(await this.generativeAI.getHistory(), null, 2)
+        await this.generativeAI.getReadableHistory()
       );
     }
 
@@ -135,31 +135,46 @@ export default class JavascriptDataset {
     makeDir(record.cleanDirPath);
     let isSuccessful = true;
 
+    const analyze = async (promiseFns) => {
+      for (const promiseFn of promiseFns) {
+        try {
+          const result = await promiseFn();
+          console.log(result);
+        } catch (error) {
+          console.error(error);
+          // Continue with the next promise even if there is an error
+        }
+      }
+    };
+
     return fetchFile(record.fetchLink)
       .then((sourceCode) => {
         if (this.shouldAnalyzeRecordsWithAI) {
-          const promises = [];
-          for (const func of record.innerMostVulnerableFunctions) {
-            promises.push(
-              this.generativeAI.chatWithAI(
-                getLinesFromString(sourceCode, func.startLine, func.endLine)
-              )
-            );
-          }
-          promises.splice(0, 0, Promise.resolve(sourceCode));
-          return Promise.all(promises);
+          const prompts = record.innerMostVulnerableFunctions.map((func) =>
+            getLinesFromString(sourceCode, func.startLine, func.endLine)
+          );
+          return this.generativeAI.getSeriesOfResponses(
+            { sourceCode },
+            prompts
+          );
         } else {
-          return [sourceCode];
+          return { sourceCode };
         }
       })
       .then((results) => {
-        if (this.shouldAnalyzeRecordsWithAI && results.length > 1) {
-          record.aiResponses = [...results].splice(0, 1);
+        if (this.shouldAnalyzeRecordsWithAI && results.aiResponses) {
+          record.aiResponses = results.aiResponses;
         }
-        writeFileAsync(`${record.dirPath}\\${record.fileName}`, results[0]);
+        writeFileAsync(
+          `${record.dirPath}\\${record.fileName}`,
+          results.sourceCode
+        );
         writeFileAsync(
           `${record.cleanDirPath}\\${record.fileName}`,
-          removeLinesFromString(results[0], record.innerMostVulnerableFunctions)
+          removeLinesFromString(
+            results.sourceCode,
+            record.innerMostVulnerableFunctions
+          )
         );
         writeFileAsync(
           `${record.dirPath}\\record.txt`,
