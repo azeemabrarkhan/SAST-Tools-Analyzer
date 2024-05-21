@@ -135,18 +135,6 @@ export default class JavascriptDataset {
     makeDir(record.cleanDirPath);
     let isSuccessful = true;
 
-    const analyze = async (promiseFns) => {
-      for (const promiseFn of promiseFns) {
-        try {
-          const result = await promiseFn();
-          console.log(result);
-        } catch (error) {
-          console.error(error);
-          // Continue with the next promise even if there is an error
-        }
-      }
-    };
-
     return fetchFile(record.fetchLink)
       .then((sourceCode) => {
         if (this.shouldAnalyzeRecordsWithAI) {
