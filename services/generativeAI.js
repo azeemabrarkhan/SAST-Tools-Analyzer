@@ -1,29 +1,52 @@
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GENERATIVE_AI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
 
 export default class GenerativeAI {
-  chat;
+  maxTokens;
+  chatObject;
 
   constructor(maxTokens) {
-    this.chat = model.startChat({
+    this.maxTokens = maxTokens ? maxTokens : 500;
+    this.chatObject = model.startChat({
       history: [],
       generationConfig: {
-        maxOutputTokens: maxTokens ? maxTokens : 500,
+        maxOutputTokens: this.maxTokens,
       },
+      safetySettings,
     });
   }
 
   resetCurrentChat() {
-    this.chat = model.startChat({
+    this.chatObject = model.startChat({
       history: [],
       generationConfig: {
-        maxOutputTokens: maxTokens ? maxTokens : 500,
+        maxOutputTokens: this.maxTokens,
       },
+      safetySettings,
     });
   }
 
@@ -35,9 +58,13 @@ export default class GenerativeAI {
   }
 
   async chatWithAI(prompt) {
-    const result = await chat.sendMessage(prompt);
+    const result = await this.chatObject.sendMessage(prompt);
     const response = await result.response;
     const text = await response.text();
     return text;
+  }
+
+  async getHistory() {
+    return await this.chatObject.getHistory();
   }
 }
