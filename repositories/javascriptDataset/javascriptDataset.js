@@ -11,7 +11,11 @@ import {
   getFunctionsInHierarchicalStructure,
   getInnerMostVulnerableFunctions,
 } from "../../utils/functions.js";
-import { getLinesFromString, removeLinesFromString } from "../../utils/text.js";
+import {
+  getLinesFromString,
+  removeLinesFromString,
+  removeTabsAndNewLines,
+} from "../../utils/text.js";
 
 const initialAIPrompt = `Code snipets are needed to be analyzed for vulnerability detection. Snipets will be supplied continously. They are needed
   to be checked for vulnererabilities. Do not provide long answers for every input, instead just provide a detailed summary in the end regarding 
@@ -56,24 +60,23 @@ export default class JavascriptDataset {
       );
     }
 
-    for (const record of [
-      formattedDataset[0],
-      formattedDataset[1],
-      formattedDataset[2],
-      formattedDataset[3],
-      formattedDataset[4],
-    ]) {
-      await this.processRecord(record);
-    }
-
     let finalResponseFromTheAI;
 
     if (this.shouldAnalyzeRecordsWithAI) {
+      for (const record of formattedDataset) {
+        await this.processRecord(record);
+      }
       console.log(`Final prompt to the AI: ${finalAIPrompt}\n`);
       finalResponseFromTheAI = await this.generativeAI.chatWithAI(
         finalAIPrompt
       );
       console.log(`Final response from the AI: ${finalResponseFromTheAI}\n`);
+    } else {
+      const promises = [];
+      formattedDataset.forEach((record) =>
+        promises.push(this.processRecord(record))
+      );
+      await Promise.all(promises);
     }
 
     const operationStats = `
@@ -139,7 +142,9 @@ export default class JavascriptDataset {
       .then((sourceCode) => {
         if (this.shouldAnalyzeRecordsWithAI) {
           const prompts = record.innerMostVulnerableFunctions.map((func) =>
-            getLinesFromString(sourceCode, func.startLine, func.endLine)
+            removeTabsAndNewLines(
+              getLinesFromString(sourceCode, func.startLine, func.endLine)
+            )
           );
           return this.generativeAI.getSeriesOfResponses(
             { sourceCode },
@@ -213,8 +218,8 @@ export default class JavascriptDataset {
     };
 
     const getDirPath = (repoPath, index, isCleanFilePath) => {
-      return `${this.currentDir}\\datasets\\javascriptDataset${
-        isCleanFilePath ? "-clean" : ""
+      return `${this.currentDir}\\datasets\\${
+        isCleanFilePath ? "combinedDataset\\clean" : "javascriptDataset"
       }\\${getOwnerAndProject(repoPath).replace(
         "/",
         "\\"
