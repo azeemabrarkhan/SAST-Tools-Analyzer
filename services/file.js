@@ -9,14 +9,12 @@ const JSON_OBJECT_LIMIT_PER_FILE = 300;
 export const makeDir = (dirPath) => {
   let error;
 
-  fs.mkdir(dirPath, { recursive: true }, (err) => {
+  try {
+    fs.mkdirSync(dirPath, { recursive: true });
+  } catch (err) {
     error = err;
-
-    const logMessage = err
-      ? `ERROR, while creating directory at ${dirPath} - error trace: ${err}`
-      : `SUCCESS, while creating directory at ${dirPath}`;
-    if (err) log(logMessage);
-  });
+    log(`ERROR, while creating directory at ${dirPath} - error trace: ${err}`);
+  }
 
   return error ? undefined : dirPath;
 };
