@@ -112,8 +112,16 @@ export default class Ossf {
       "\\"
     )}\\${index}\\${postPatch.commit}`;
 
+    const vulPathForCombinedDataset = `${
+      this.currentDir
+    }\\datasets\\combinedDataset\\vul\\${CVE}\\${ownerAndProject.replace(
+      "/",
+      "\\"
+    )}\\${index}\\${prePatch.commit}`;
+
     makeDir(vulPath);
     makeDir(fixPath);
+    makeDir(vulPathForCombinedDataset);
 
     const fileName = prePatch.weaknesses[0].location.file;
 
@@ -140,6 +148,10 @@ export default class Ossf {
           .then((sourceCode) => {
             writeFileAsync(`${vulPath}\\${fileNameWithExt}`, sourceCode);
             writeFileAsync(
+              `${vulPathForCombinedDataset}\\${fileNameWithExt}`,
+              sourceCode
+            );
+            writeFileAsync(
               `${vulPath}\\weaknesses.txt`,
               JSON.stringify(prePatch.weaknesses, null, 2)
             );
@@ -158,6 +170,7 @@ export default class Ossf {
               deleteFile(`${fixPath}\\weaknesses.txt`);
               deleteFile(`${vulPath}\\${fileNameWithExt}`);
               deleteFile(`${vulPath}\\weaknesses.txt`);
+              deleteFile(`${vulPathForCombinedDataset}\\${fileNameWithExt}`);
             }
           })
           .catch((err) => {
