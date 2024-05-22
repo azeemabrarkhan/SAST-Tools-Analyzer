@@ -23,3 +23,13 @@ export const removeLinesFromString = (str, blocksToRemove) => {
 
   return splittedString.filter((line) => line).join("\n");
 };
+
+export const removeTabsAndNewLines = (str) => {
+  return str
+    .split("\n")
+    .reduce((acc, value) => acc + value, "")
+    .split("\t")
+    .reduce((acc, value) => acc + value, "")
+    .split(" ")
+    .reduce((acc, value) => acc + value, "");
+};
