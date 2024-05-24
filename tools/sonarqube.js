@@ -14,7 +14,7 @@ headers.append(
     )
 );
 
-export class sonarqube {
+export class Sonarqube {
   querySonarQubeServer = async (url) => {
     return fetch(url, {
       headers,

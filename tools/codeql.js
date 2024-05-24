@@ -4,6 +4,7 @@ import {
   writeFile,
   csvToArray,
   appendFileFromTop,
+  readFile,
 } from "../services/file.js";
 
 const csvHeader =
@@ -11,7 +12,14 @@ const csvHeader =
 
 export class CodeQl {
   convertCsvToFormattedResult = async (filePath) => {
-    // appendFileFromTop(filePath, csvHeader);
+    if (
+      !readFile(
+        "./datasets/ossf/javascript-security-experimental.csv"
+      ).startsWith(csvHeader)
+    ) {
+      appendFileFromTop(filePath, csvHeader);
+    }
+
     const formattedResults = [];
     await makeDir("./formattedResults");
 

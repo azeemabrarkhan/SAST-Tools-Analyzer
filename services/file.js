@@ -67,9 +67,13 @@ export const appendFile = (filePath, fileContentString) => {
   }
 };
 
+export const readFile = (filePath) => {
+  return fs.readFileSync(filePath, "utf-8");
+};
+
 export const appendFileFromTop = (filePath, fileContentString) => {
   try {
-    const existingContent = fs.readFileSync(filePath, "utf-8");
+    const existingContent = readFile(filePath);
     const updatedContent = fileContentString + existingContent;
 
     writeFile(filePath, updatedContent);
@@ -124,7 +128,7 @@ export const readDir = (dirPath) => {
 
 export const readJsonFileSync = (filePath) => {
   try {
-    const jsonData = fs.readFileSync(filePath, "utf-8");
+    const jsonData = readFile(filePath);
     const data = JSON.parse(jsonData);
     return data;
   } catch (err) {
