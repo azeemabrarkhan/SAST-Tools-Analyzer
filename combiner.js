@@ -212,7 +212,9 @@ export default class Combiner {
 
         switch (this.analysisLevel) {
           case "file":
-            isVulnerable = vulInTheSameFileByCurrentTool.length > 0;
+            isVulnerable =
+              vulInTheSameFileByCurrentTool.length > 0 &&
+              !results((r) => r.vulPath === vul.Path);
             break;
 
           case "function":
