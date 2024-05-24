@@ -1,5 +1,5 @@
 import Analyzer from "./analyzer.js";
-import { readJsonFileSync, readDir } from "./services/file.js";
+import { readJsonFileSync } from "./services/file.js";
 
 export default class Combiner {
   found;
@@ -147,7 +147,7 @@ export default class Combiner {
     }
   };
 
-  evaluateIndividualTool = async (toolName) => {
+  evaluateIndividualTool = (toolName) => {
     let toolResult;
 
     switch (toolName) {
@@ -181,9 +181,8 @@ export default class Combiner {
     );
   };
 
-  withAndLogic = async () => {
+  withAndLogic = () => {
     console.log(this.selectedToolsNames);
-    // const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
     const fileNames = this.selectedToolsNames.map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
@@ -257,9 +256,8 @@ export default class Combiner {
     );
   };
 
-  withOrLogic = async () => {
+  withOrLogic = () => {
     console.log(this.selectedToolsNames);
-    // const fileNames = await readDir(`${process.cwd()}\\formattedResults`);
     const fileNames = this.selectedToolsNames.map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
@@ -328,5 +326,5 @@ export default class Combiner {
     );
   };
 
-  withMajorityLogic = async () => {};
+  withMajorityLogic = () => {};
 }
