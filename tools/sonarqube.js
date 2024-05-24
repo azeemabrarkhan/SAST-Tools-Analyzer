@@ -1,7 +1,7 @@
 import { log } from "../services/logger.js";
 import { makeDir, writeFile } from "../services/file.js";
 
-const baseUrl = `http://localhost:9000/api/issues/search?projectKey=${process.env.SONAR_QUBE_PROJECT_KEY}`;
+const baseUrl = `http://localhost:9000/api/issues/search?projects=${process.env.SONAR_QUBE_PROJECT_KEY}`;
 const API_LIMIT = 10_000;
 const pageSize = 500;
 
