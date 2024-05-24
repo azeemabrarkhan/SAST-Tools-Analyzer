@@ -214,7 +214,7 @@ export default class Combiner {
           case "file":
             isVulnerable =
               vulInTheSameFileByCurrentTool.length > 0 &&
-              !results((r) => r.vulPath === vul.Path);
+              !results.find((r) => r.vulPath === vul.vulPath);
             break;
 
           case "function":
