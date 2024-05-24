@@ -55,19 +55,59 @@ export default class Combiner {
     return fs[0]?.name;
   };
 
+  getTotalVulCount = () => {
+    let metaRecordsWithoutDuplicates = [];
+    if (this.analysisLevel === "file") {
+      for (const metaSlice of this.metaData) {
+        if (
+          !metaRecordsWithoutDuplicates.find(
+            (r) => r.vulPath === metaSlice.vulPath
+          )
+        ) {
+          metaRecordsWithoutDuplicates.push(metaSlice);
+        }
+      }
+      return metaRecordsWithoutDuplicates.length;
+    } else if (this.analysisLevel === "function") {
+      for (const metaSlice of this.metaData) {
+        if (
+          !metaRecordsWithoutDuplicates.find(
+            (r) =>
+              r.vulPath === metaSlice.vulPath &&
+              this.getFunctionNameWithLineNumer(
+                r.functionsInVul,
+                r.lineNumber
+              ) ===
+                this.getFunctionNameWithLineNumer(
+                  r.functionsInVul,
+                  metaSlice.lineNumber
+                )
+          )
+        ) {
+          metaRecordsWithoutDuplicates.push(metaSlice);
+        }
+      }
+      return metaRecordsWithoutDuplicates.length;
+    } else {
+      return this.metaData.length;
+    }
+  };
+
   setFoundAndNotFound = (results) => {
     this.found = [];
     this.notFound = [];
-
     for (const resultSlice of results) {
       const actualVulsInTheCurrentFile = this.metaData.filter(
         (metaSlice) => metaSlice.vulPath === resultSlice.vulPath
       );
       switch (this.analysisLevel) {
         case "file":
-          if (actualVulsInTheCurrentFile.length > 0) {
+          if (
+            actualVulsInTheCurrentFile.length > 0 &&
+            !this.found.find((r) => r.vulPath === resultSlice.vulPath)
+          ) {
             this.found.push(resultSlice);
-          } else {
+          } else if (actualVulsInTheCurrentFile.length === 0) {
             this.notFound.push(resultSlice);
           }
           break;
@@ -134,7 +174,11 @@ export default class Combiner {
     }
 
     this.setFoundAndNotFound(toolResult);
-    this.analyzer.evaluateResult(this.found, this.notFound);
+    this.analyzer.evaluateResult(
+      this.found,
+      this.notFound,
+      this.getTotalVulCount()
+    );
   };
 
   withAndLogic = async () => {
@@ -204,7 +248,11 @@ export default class Combiner {
 
     console.log(`***AND LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
     this.setFoundAndNotFound(results);
-    this.analyzer.evaluateResult(this.found, this.notFound);
+    this.analyzer.evaluateResult(
+      this.found,
+      this.notFound,
+      this.getTotalVulCount()
+    );
   };
 
   withOrLogic = async () => {
@@ -271,7 +319,11 @@ export default class Combiner {
 
     console.log(`***OR LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
     this.setFoundAndNotFound(results);
-    this.analyzer.evaluateResult(this.found, this.notFound);
+    this.analyzer.evaluateResult(
+      this.found,
+      this.notFound,
+      this.getTotalVulCount()
+    );
   };
 
   withMajorityLogic = async () => {};
