@@ -35,7 +35,7 @@ export class CodeQl {
           start: issue.startLine ? parseInt(issue.startLine) : undefined,
           end: issue.endLine ? parseInt(issue.endLine) : undefined,
         },
-        type: issue.severity,
+        type: "",
         key: "",
         rule: "",
         severity: issue.severity,

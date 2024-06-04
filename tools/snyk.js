@@ -31,7 +31,7 @@ export class Snyk {
             start: region.startLine ? parseInt(region.startLine) : undefined,
             end: region.endLine ? parseInt(region.endLine) : undefined,
           },
-          type: result.level,
+          type: "",
           key: result.fingerprints[0],
           rule: result.ruleId,
           severity: result.level,
