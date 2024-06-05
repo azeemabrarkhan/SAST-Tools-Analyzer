@@ -100,23 +100,41 @@ export default class Combiner {
       const actualVulsInTheCurrentFile = this.metaData.filter(
         (metaSlice) => metaSlice.vulPath === resultSlice.vulPath
       );
+
+      let indexOfAlreadyFoundOrNotFound = -1;
+
       switch (this.analysisLevel) {
         case "file":
           if (actualVulsInTheCurrentFile.length > 0) {
-            if (!this.found.find((r) => r.vulPath === resultSlice.vulPath)) {
+            indexOfAlreadyFoundOrNotFound = this.found.findIndex(
+              (r) => r.vulPath === resultSlice.vulPath
+            );
+            if (indexOfAlreadyFoundOrNotFound < 0) {
               this.found.push(resultSlice);
+            } else {
+              // todo
             }
           } else {
-            if (!this.notFound.find((r) => r.vulPath === resultSlice.vulPath)) {
+            indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
+              (r) => r.vulPath === resultSlice.vulPath
+            );
+            if (indexOfAlreadyFoundOrNotFound < 0) {
               this.notFound.push(resultSlice);
+            } else {
+              // todo
             }
           }
           break;
 
         case "function":
           if (actualVulsInTheCurrentFile.length === 0) {
-            if (!this.notFound.find((r) => r.vulPath === resultSlice.vulPath)) {
+            indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
+              (r) => r.vulPath === resultSlice.vulPath
+            );
+            if (indexOfAlreadyFoundOrNotFound < 0) {
               this.notFound.push(resultSlice);
+            } else {
+              // todo
             }
           } else {
             if (
@@ -132,38 +150,40 @@ export default class Combiner {
                   )
               )
             ) {
-              if (
-                !this.found.find(
-                  (r) =>
-                    r.vulPath === resultSlice.vulPath &&
+              indexOfAlreadyFoundOrNotFound = this.found.findIndex(
+                (r) =>
+                  r.vulPath === resultSlice.vulPath &&
+                  this.getFunctionNameWithLineNumer(
+                    actualVulsInTheCurrentFile[0].functionsInVul,
+                    r.lineNumber
+                  ) ===
                     this.getFunctionNameWithLineNumer(
                       actualVulsInTheCurrentFile[0].functionsInVul,
-                      r.lineNumber
-                    ) ===
-                      this.getFunctionNameWithLineNumer(
-                        actualVulsInTheCurrentFile[0].functionsInVul,
-                        resultSlice.lineNumber
-                      )
-                )
-              ) {
+                      resultSlice.lineNumber
+                    )
+              );
+              if (indexOfAlreadyFoundOrNotFound < 0) {
                 this.found.push(resultSlice);
+              } else {
+                // todo
               }
             } else {
-              if (
-                !this.notFound.find(
-                  (r) =>
-                    r.vulPath === resultSlice.vulPath &&
+              indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
+                (r) =>
+                  r.vulPath === resultSlice.vulPath &&
+                  this.getFunctionNameWithLineNumer(
+                    actualVulsInTheCurrentFile[0].functionsInVul,
+                    r.lineNumber
+                  ) ===
                     this.getFunctionNameWithLineNumer(
                       actualVulsInTheCurrentFile[0].functionsInVul,
-                      r.lineNumber
-                    ) ===
-                      this.getFunctionNameWithLineNumer(
-                        actualVulsInTheCurrentFile[0].functionsInVul,
-                        resultSlice.lineNumber
-                      )
-                )
-              ) {
+                      resultSlice.lineNumber
+                    )
+              );
+              if (indexOfAlreadyFoundOrNotFound < 0) {
                 this.notFound.push(resultSlice);
+              } else {
+                // todo
               }
             }
           }
@@ -246,25 +266,49 @@ export default class Combiner {
           (result) => result.vulPath === vul.vulPath
         );
 
+        let indexOfAlreadyFound = -1;
+
         switch (this.analysisLevel) {
           case "file":
+            indexOfAlreadyFound = results.findIndex(
+              (r) => r.vulPath === vul.vulPath
+            );
             isVulnerable =
               vulInTheSameFileByCurrentTool.length > 0 &&
-              !results.find((r) => r.vulPath === vul.vulPath);
+              indexOfAlreadyFound < 0;
+            if (indexOfAlreadyFound >= 0) {
+              // todo
+            }
             break;
 
           case "function":
-            isVulnerable = !!vulInTheSameFileByCurrentTool.find(
-              (v) =>
+            indexOfAlreadyFound = results.findIndex(
+              (r) =>
+                r.vulPath === vul.vulPath &&
                 this.getFunctionNameWithLineNumer(
                   functionsInTheCurrentFile,
-                  v.lineNumber
+                  r.lineNumber
                 ) ===
-                this.getFunctionNameWithLineNumer(
-                  functionsInTheCurrentFile,
-                  vul.lineNumber
-                )
+                  this.getFunctionNameWithLineNumer(
+                    functionsInTheCurrentFile,
+                    vul.lineNumber
+                  )
             );
+            isVulnerable =
+              !!vulInTheSameFileByCurrentTool.find(
+                (v) =>
+                  this.getFunctionNameWithLineNumer(
+                    functionsInTheCurrentFile,
+                    v.lineNumber
+                  ) ===
+                  this.getFunctionNameWithLineNumer(
+                    functionsInTheCurrentFile,
+                    vul.lineNumber
+                  )
+              ) && indexOfAlreadyFound < 0;
+            if (indexOfAlreadyFound >= 0) {
+              // todo
+            }
             break;
 
           case "line":
