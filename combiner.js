@@ -163,7 +163,7 @@ export default class Combiner {
                       )
                 )
               ) {
-                this.notFound(resultSlice);
+                this.notFound.push(resultSlice);
               }
             }
           }
@@ -236,15 +236,15 @@ export default class Combiner {
     for (const vul of toolResults[0]) {
       let isVulnerable = true;
 
+      const functionsInTheCurrentFile =
+        this.metaData.find((metaSlice) => metaSlice.vulPath === vul.vulPath)
+          ?.functionsInVul ?? [];
+
       for (let i = 1; i < toolResults.length && isVulnerable; i++) {
         const toolResult = toolResults[i];
         const vulInTheSameFileByCurrentTool = toolResult.filter(
           (result) => result.vulPath === vul.vulPath
         );
-
-        const functionsInTheCurrentFile =
-          this.metaData.find((metaSlice) => metaSlice.vulPath === vul.vulPath)
-            ?.functionsInVul ?? [];
 
         switch (this.analysisLevel) {
           case "file":
@@ -254,7 +254,7 @@ export default class Combiner {
             break;
 
           case "function":
-            isVulnerable = vulInTheSameFileByCurrentTool.find(
+            isVulnerable = !!vulInTheSameFileByCurrentTool.find(
               (v) =>
                 this.getFunctionNameWithLineNumer(
                   functionsInTheCurrentFile,
@@ -264,17 +264,13 @@ export default class Combiner {
                   functionsInTheCurrentFile,
                   vul.lineNumber
                 )
-            )
-              ? true
-              : false;
+            );
             break;
 
           case "line":
-            isVulnerable = vulInTheSameFileByCurrentTool.find(
+            isVulnerable = !!vulInTheSameFileByCurrentTool.find(
               (v) => v.lineNumber === vul.lineNumber
-            )
-              ? true
-              : false;
+            );
             break;
         }
       }
