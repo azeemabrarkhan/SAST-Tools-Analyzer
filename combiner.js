@@ -102,33 +102,70 @@ export default class Combiner {
       );
       switch (this.analysisLevel) {
         case "file":
-          if (
-            actualVulsInTheCurrentFile.length > 0 &&
-            !this.found.find((r) => r.vulPath === resultSlice.vulPath)
-          ) {
-            this.found.push(resultSlice);
-          } else if (actualVulsInTheCurrentFile.length === 0) {
-            this.notFound.push(resultSlice);
+          if (actualVulsInTheCurrentFile.length > 0) {
+            if (!this.found.find((r) => r.vulPath === resultSlice.vulPath)) {
+              this.found.push(resultSlice);
+            }
+          } else {
+            if (!this.notFound.find((r) => r.vulPath === resultSlice.vulPath)) {
+              this.notFound.push(resultSlice);
+            }
           }
           break;
 
         case "function":
-          if (
-            actualVulsInTheCurrentFile.find(
-              (v) =>
-                this.getFunctionNameWithLineNumer(
-                  v.functionsInVul,
-                  v.lineNumber
-                ) ===
-                this.getFunctionNameWithLineNumer(
-                  v.functionsInVul,
-                  resultSlice.lineNumber
-                )
-            )
-          ) {
-            this.found.push(resultSlice);
+          if (actualVulsInTheCurrentFile.length === 0) {
+            if (!this.notFound.find((r) => r.vulPath === resultSlice.vulPath)) {
+              this.notFound.push(resultSlice);
+            }
           } else {
-            this.notFound.push(resultSlice);
+            if (
+              actualVulsInTheCurrentFile.find(
+                (v) =>
+                  this.getFunctionNameWithLineNumer(
+                    v.functionsInVul,
+                    v.lineNumber
+                  ) ===
+                  this.getFunctionNameWithLineNumer(
+                    v.functionsInVul,
+                    resultSlice.lineNumber
+                  )
+              )
+            ) {
+              if (
+                !this.found.find(
+                  (r) =>
+                    r.vulPath === resultSlice.vulPath &&
+                    this.getFunctionNameWithLineNumer(
+                      actualVulsInTheCurrentFile[0].functionsInVul,
+                      r.lineNumber
+                    ) ===
+                      this.getFunctionNameWithLineNumer(
+                        actualVulsInTheCurrentFile[0].functionsInVul,
+                        resultSlice.lineNumber
+                      )
+                )
+              ) {
+                this.found.push(resultSlice);
+              }
+            } else {
+              if (
+                !this.notFound.find(
+                  (r) =>
+                    r.vulPath === resultSlice.vulPath &&
+                    this.getFunctionNameWithLineNumer(
+                      actualVulsInTheCurrentFile[0].functionsInVul,
+                      r.lineNumber
+                    ) ===
+                      this.getFunctionNameWithLineNumer(
+                        actualVulsInTheCurrentFile[0].functionsInVul,
+                        resultSlice.lineNumber
+                      )
+                )
+              ) {
+                this.notFound(resultSlice);
+              }
+            }
           }
           break;
 
