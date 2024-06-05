@@ -346,11 +346,7 @@ export default class Combiner {
       );
       if (toolResult) {
         for (const result of toolResult) {
-          let existingResult = true;
-
-          const alreadyProcessedVulInTheSameFile = results.filter(
-            (r) => r.vulPath === result.vulPath
-          );
+          let indexOfAlreadyFound;
 
           const functionsInTheCurrentFile =
             this.metaData.find(
@@ -359,35 +355,45 @@ export default class Combiner {
 
           switch (this.analysisLevel) {
             case "file":
-              existingResult = alreadyProcessedVulInTheSameFile.length > 0;
+              indexOfAlreadyFound = results.findIndex(
+                (r) => r.vulPath === result.vulPath
+              );
+              if (indexOfAlreadyFound >= 0) {
+                // todo
+              }
               break;
 
             case "function":
-              existingResult = alreadyProcessedVulInTheSameFile.find(
-                (v) =>
+              indexOfAlreadyFound = results.findIndex(
+                (r) =>
+                  r.vulPath === result.vulPath &&
                   this.getFunctionNameWithLineNumer(
                     functionsInTheCurrentFile,
-                    v.lineNumber
+                    r.lineNumber
                   ) ===
-                  this.getFunctionNameWithLineNumer(
-                    functionsInTheCurrentFile,
-                    result.lineNumber
-                  )
-              )
-                ? true
-                : false;
+                    this.getFunctionNameWithLineNumer(
+                      functionsInTheCurrentFile,
+                      result.lineNumber
+                    )
+              );
+              if (indexOfAlreadyFound >= 0) {
+                // todo
+              }
               break;
 
             case "line":
-              existingResult = alreadyProcessedVulInTheSameFile.find(
-                (v) => v.lineNumber === result.lineNumber
-              )
-                ? true
-                : false;
+              indexOfAlreadyFound = results.findIndex(
+                (r) =>
+                  r.vulPath === result.vulPath &&
+                  r.lineNumber === result.lineNumber
+              );
+              if (indexOfAlreadyFound >= 0) {
+                // todo
+              }
               break;
           }
 
-          if (!existingResult) {
+          if (indexOfAlreadyFound < 0) {
             results.push(result);
           }
         }
