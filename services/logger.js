@@ -1,3 +1,4 @@
+import { getTimeStamp } from "../utils/timeData.js";
 import { deleteFile, appendFileAsync } from "./file.js";
 
 const currentDir = process.cwd();
@@ -5,8 +6,7 @@ let logFilePath;
 let lineNumber;
 
 export const createNewLogFile = () => {
-  const date = new Date();
-  logFilePath = `${currentDir}\\log-${date.toDateString()} - ${date.getHours()}hh ${date.getMinutes()}mm ${date.getSeconds()}ss.txt`;
+  logFilePath = `${currentDir}\\log-${getTimeStamp()}.txt`;
   lineNumber = 1;
 };
 
