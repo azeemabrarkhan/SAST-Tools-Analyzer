@@ -245,12 +245,7 @@ export default class Combiner {
         break;
     }
 
-    this.setFoundAndNotFound(toolResult);
-    this.analyzer.evaluateResult(
-      this.found,
-      this.notFound,
-      this.getTotalVulCount()
-    );
+    this.processResults(toolResult);
   };
 
   withAndLogic = () => {
@@ -358,12 +353,7 @@ export default class Combiner {
     }
 
     console.log(`***AND LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
-    this.setFoundAndNotFound(results);
-    this.analyzer.evaluateResult(
-      this.found,
-      this.notFound,
-      this.getTotalVulCount()
-    );
+    this.processResults(results);
   };
 
   withOrLogic = () => {
@@ -437,6 +427,10 @@ export default class Combiner {
     }
 
     console.log(`***OR LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
+    this.processResults(results);
+  };
+
+  processResults = (results) => {
     this.setFoundAndNotFound(results);
     this.analyzer.evaluateResult(
       this.found,
