@@ -5,3 +5,4 @@ datasets
 repositories/ossf/metaData.json
 repositories/javascriptDataset/metaData.json
 formattedResults/
+output/

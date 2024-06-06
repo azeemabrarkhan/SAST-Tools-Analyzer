@@ -1,5 +1,5 @@
 import Analyzer from "./analyzer.js";
-import { readJsonFileSync } from "./services/file.js";
+import { makeDir, readJsonFileSync, writeFile } from "./services/file.js";
 
 export default class Combiner {
   found;
@@ -7,6 +7,7 @@ export default class Combiner {
   metaData;
   analyzer;
   analysisLevel;
+  toolOrLogicName;
   selectedToolsNames;
 
   constructor() {
@@ -20,7 +21,7 @@ export default class Combiner {
     this.selectedToolsNames = ["codeql", "sonarqube", "snyk"];
   }
 
-  viewSelectedTools = () => {
+  printSelectedTools = () => {
     console.log(this.selectedToolsNames);
   };
 
@@ -227,21 +228,21 @@ export default class Combiner {
         toolResult = readJsonFileSync(
           `${process.cwd()}\\formattedResults\\formattedResult-codeql.json`
         );
-        console.log(`***CODE-QL*** - ${this.analysisLevel.toUpperCase()}`);
+        this.toolOrLogicName = "CODE-QL";
         break;
 
       case "sonarqube":
         toolResult = readJsonFileSync(
           `${process.cwd()}\\formattedResults\\formattedResult-sonarqube.json`
         );
-        console.log(`***SONAR QUBE*** - ${this.analysisLevel.toUpperCase()}`);
+        this.toolOrLogicName = "SONAR QUBE";
         break;
 
       case "snyk":
         toolResult = readJsonFileSync(
           `${process.cwd()}\\formattedResults\\formattedResult-snyk.json`
         );
-        console.log(`***SNYK*** - ${this.analysisLevel.toUpperCase()}`);
+        this.toolOrLogicName = "SNYK";
         break;
     }
 
@@ -249,7 +250,7 @@ export default class Combiner {
   };
 
   withAndLogic = () => {
-    console.log(this.selectedToolsNames);
+    this.toolOrLogicName = "AND LOGIC";
     const fileNames = this.selectedToolsNames.map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
@@ -352,12 +353,11 @@ export default class Combiner {
       }
     }
 
-    console.log(`***AND LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
     this.processResults(results);
   };
 
   withOrLogic = () => {
-    console.log(this.selectedToolsNames);
+    this.toolOrLogicName = "OR LOGIC";
     const fileNames = this.selectedToolsNames.map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
@@ -426,16 +426,44 @@ export default class Combiner {
       }
     }
 
-    console.log(`***OR LOGIC*** - ${this.analysisLevel.toUpperCase()}`);
     this.processResults(results);
   };
 
   processResults = (results) => {
+    if (
+      this.toolOrLogicName === "OR LOGIC" ||
+      this.toolOrLogicName === "AND LOGIC"
+    ) {
+      this.printSelectedTools();
+    }
+    console.log(
+      `***${this.toolOrLogicName}*** - ${this.analysisLevel.toUpperCase()}`
+    );
     this.setFoundAndNotFound(results);
+    this.saveResultFile();
     this.analyzer.evaluateResult(
       this.found,
       this.notFound,
       this.getTotalVulCount()
+    );
+  };
+
+  saveResultFile = () => {
+    let path = `./output/${this.toolOrLogicName}/`;
+    if (
+      this.toolOrLogicName === "OR LOGIC" ||
+      this.toolOrLogicName === "AND LOGIC"
+    ) {
+      path += `${this.selectedToolsNames.join("_")}`;
+    }
+    makeDir(path);
+    writeFile(
+      `${path}/${this.analysisLevel}_true_positives.json`,
+      JSON.stringify(this.found, null, 4)
+    );
+    writeFile(
+      `${path}/${this.analysisLevel}_false_positives.json`,
+      JSON.stringify(this.notFound, null, 4)
     );
   };
 
