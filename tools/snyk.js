@@ -40,6 +40,7 @@ export class Snyk {
           tags: [],
           quickFixAvailable: result.properties.isAutofixable ? "yes" : "no",
           properties: result.properties,
+          similarResults: [],
         };
 
         formattedResults.push(formattedResult);

@@ -113,6 +113,9 @@ export default class Combiner {
               this.found.push(resultSlice);
             } else {
               // todo
+              this.found[indexOfAlreadyFoundOrNotFound].similarResults.push(
+                resultSlice
+              );
             }
           } else {
             indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
@@ -122,6 +125,9 @@ export default class Combiner {
               this.notFound.push(resultSlice);
             } else {
               // todo
+              this.notFound[indexOfAlreadyFoundOrNotFound].similarResults.push(
+                resultSlice
+              );
             }
           }
           break;
@@ -135,6 +141,9 @@ export default class Combiner {
               this.notFound.push(resultSlice);
             } else {
               // todo
+              this.notFound[indexOfAlreadyFoundOrNotFound].similarResults.push(
+                resultSlice
+              );
             }
           } else {
             if (
@@ -166,6 +175,9 @@ export default class Combiner {
                 this.found.push(resultSlice);
               } else {
                 // todo
+                this.found[indexOfAlreadyFoundOrNotFound].similarResults.push(
+                  resultSlice
+                );
               }
             } else {
               indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
@@ -184,6 +196,9 @@ export default class Combiner {
                 this.notFound.push(resultSlice);
               } else {
                 // todo
+                this.notFound[
+                  indexOfAlreadyFoundOrNotFound
+                ].similarResults.push(resultSlice);
               }
             }
           }
@@ -260,63 +275,81 @@ export default class Combiner {
         this.metaData.find((metaSlice) => metaSlice.vulPath === vul.vulPath)
           ?.functionsInVul ?? [];
 
+      let indexOfAlreadyFound = -1;
+
+      switch (this.analysisLevel) {
+        case "file":
+          indexOfAlreadyFound = results.findIndex(
+            (r) => r.vulPath === vul.vulPath
+          );
+          break;
+        case "function":
+          indexOfAlreadyFound = results.findIndex(
+            (r) =>
+              r.vulPath === vul.vulPath &&
+              this.getFunctionNameWithLineNumer(
+                functionsInTheCurrentFile,
+                r.lineNumber
+              ) ===
+                this.getFunctionNameWithLineNumer(
+                  functionsInTheCurrentFile,
+                  vul.lineNumber
+                )
+          );
+          break;
+      }
+
       for (let i = 1; i < toolResults.length && isVulnerable; i++) {
         const toolResult = toolResults[i];
-        const vulInTheSameFileByCurrentTool = toolResult.filter(
-          (result) => result.vulPath === vul.vulPath
-        );
 
-        let indexOfAlreadyFound = -1;
+        let indexOfCurrentTool = -1;
 
         switch (this.analysisLevel) {
           case "file":
-            indexOfAlreadyFound = results.findIndex(
-              (r) => r.vulPath === vul.vulPath
+            indexOfCurrentTool = toolResult.findIndex(
+              (result) => result.vulPath === vul.vulPath
             );
-            isVulnerable =
-              vulInTheSameFileByCurrentTool.length > 0 &&
-              indexOfAlreadyFound < 0;
-            if (indexOfAlreadyFound >= 0) {
-              // todo
+            isVulnerable = indexOfCurrentTool >= 0 && indexOfAlreadyFound < 0;
+            if (indexOfCurrentTool >= 0) {
+              vul.similarResults.push(toolResult[indexOfCurrentTool]);
             }
             break;
 
           case "function":
-            indexOfAlreadyFound = results.findIndex(
-              (r) =>
-                r.vulPath === vul.vulPath &&
+            indexOfCurrentTool = toolResult.findIndex(
+              (v) =>
+                v.vulPath === vul.vulPath &&
                 this.getFunctionNameWithLineNumer(
                   functionsInTheCurrentFile,
-                  r.lineNumber
+                  v.lineNumber
                 ) ===
                   this.getFunctionNameWithLineNumer(
                     functionsInTheCurrentFile,
                     vul.lineNumber
                   )
             );
-            isVulnerable =
-              !!vulInTheSameFileByCurrentTool.find(
-                (v) =>
-                  this.getFunctionNameWithLineNumer(
-                    functionsInTheCurrentFile,
-                    v.lineNumber
-                  ) ===
-                  this.getFunctionNameWithLineNumer(
-                    functionsInTheCurrentFile,
-                    vul.lineNumber
-                  )
-              ) && indexOfAlreadyFound < 0;
-            if (indexOfAlreadyFound >= 0) {
-              // todo
+            isVulnerable = indexOfCurrentTool >= 0 && indexOfAlreadyFound < 0;
+            if (indexOfCurrentTool >= 0) {
+              vul.similarResults.push(toolResult[indexOfCurrentTool]);
             }
             break;
 
           case "line":
-            isVulnerable = !!vulInTheSameFileByCurrentTool.find(
-              (v) => v.lineNumber === vul.lineNumber
+            indexOfCurrentTool = toolResult.findIndex(
+              (v) =>
+                v.vulPath === vul.vulPath && v.lineNumber === vul.lineNumber
             );
+            isVulnerable = indexOfCurrentTool >= 0;
+            if (indexOfCurrentTool >= 0) {
+              vul.similarResults.push(toolResult[indexOfCurrentTool]);
+            }
             break;
         }
+      }
+
+      if (indexOfAlreadyFound >= 0) {
+        // todo
+        results[indexOfAlreadyFound].similarResults.push(vul);
       }
 
       if (isVulnerable) {
@@ -360,6 +393,7 @@ export default class Combiner {
               );
               if (indexOfAlreadyFound >= 0) {
                 // todo
+                results[indexOfAlreadyFound].similarResults.push(result);
               }
               break;
 
@@ -378,6 +412,7 @@ export default class Combiner {
               );
               if (indexOfAlreadyFound >= 0) {
                 // todo
+                results[indexOfAlreadyFound].similarResults.push(result);
               }
               break;
 
@@ -389,6 +424,7 @@ export default class Combiner {
               );
               if (indexOfAlreadyFound >= 0) {
                 // todo
+                results[indexOfAlreadyFound].similarResults.push(result);
               }
               break;
           }

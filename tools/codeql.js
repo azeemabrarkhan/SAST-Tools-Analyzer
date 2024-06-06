@@ -44,6 +44,7 @@ export class CodeQl {
         tags: [],
         quickFixAvailable: "no information",
         properties: {},
+        similarResults: [],
       };
 
       formattedResults.push(formattedResult);

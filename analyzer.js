@@ -5,8 +5,6 @@ export default class Analyzer {
     // found = Hits that are included in the known vul set
     // notFound = Hits that are not included in the known vul set
 
-    console.log(totalVulnerabilities);
-
     const tp = found.length;
     const fp = notFound.length;
     const fn = totalVulnerabilities - tp;
