@@ -1,4 +1,3 @@
-import { log } from "../services/logger.js";
 import {
   makeDir,
   writeFile,

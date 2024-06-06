@@ -1,8 +1,8 @@
-import { mergeJsonFiles, readJsonFileSync } from "./services/file.js";
+import { mergeJsonFiles, readJsonFileSync, readFile } from "./services/file.js";
 import readline from "readline";
 import Secbench from "./repositories/secbench/secbench.js";
 import Ossf from "./repositories/ossf/ossf.js";
-import { sonarqube } from "./tools/sonarqube.js";
+import { Sonarqube } from "./tools/sonarqube.js";
 import { CodeQl } from "./tools/codeql.js";
 import Combiner from "./combiner.js";
 import { Snyk } from "./tools/snyk.js";
@@ -76,7 +76,7 @@ const main = async () => {
   }
 };
 
-await main();
+// await main();
 
 // const javascriptDataset = new JavascriptDataset();
 // await javascriptDataset.scrape(true);
@@ -212,18 +212,59 @@ const aiQuestions = [
 //   console.log(err);
 // }
 
-// const sonarqubeObj = new sonarqube();
-// const issues2 = await sonarqubeObj.fetchResultsFromServer("VULNERABILITY");
+const sonarqube = new Sonarqube();
+const issues2 = await sonarqube.fetchResultsFromServer("VULNERABILITY");
+
+const codeql = new CodeQl();
+await codeql.convertCsvToFormattedResult(
+  "./datasets/ossf/javascript-security-experimental.csv"
+);
+
+const snyk = new Snyk();
+await snyk.convertJsonToFormattedResult("./datasets/ossf/snykResult.json");
+
+const combiner = new Combiner();
+// combiner.analyzeOnFunctionLevel();
+combiner.evaluateIndividualTool("sonarqube");
+// combiner.evaluateIndividualTool("codeql");
+// combiner.evaluateIndividualTool("snyk");
+combiner.deselectTool("sonarqube");
+combiner.withAndLogic();
+combiner.analyzeOnFunctionLevel();
+combiner.withAndLogic();
+combiner.analyzeOnLineLevel();
+combiner.withAndLogic();
+
+combiner.selectTool("sonarqube");
+combiner.analyzeOnFileLevel();
+combiner.withOrLogic();
+combiner.analyzeOnFunctionLevel();
+combiner.withOrLogic();
+combiner.analyzeOnLineLevel();
+combiner.withOrLogic();
+
+// combiner.deselectTool("sonarqube");
+// combiner.withAndLogic();
+// combiner.withOrLogic();
+
+// combiner.selectTool("sonarqube");
+// combiner.deselectTool("codeql");
+// combiner.withAndLogic();
+// combiner.withOrLogic();
+
+// combiner.deselectTool("snyk");
+// combiner.selectTool("codeql");
+// combiner.withAndLogic();
+// combiner.withOrLogic();
+// combiner.withOrLogic();
+
 // const issues1 = await sonarqubeObj.fetchResultsFromServer("BUG");
+// console.log(issues1.length);
+
 // const issues3 = await sonarqubeObj.fetchResultsFromServer("CODE_SMELL");
 
 // const codeql = new CodeQl();
 // await codeql.convertCsvToFormattedResult("./datasets/ossf_f - Copy/new.csv");
-
-// const snyk = new Snyk();
-// await snyk.convertJsonToFormattedResult("./datasets/ossf_f - Copy/snyk.json");
-
-// const combiner = new Combiner();
 
 // const runCombiner = async () => {
 //   await combiner.evaluateIndividualTool("codeql");

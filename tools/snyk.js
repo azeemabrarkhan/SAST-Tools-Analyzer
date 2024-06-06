@@ -1,17 +1,7 @@
-import { log } from "../services/logger.js";
-import {
-  makeDir,
-  writeFile,
-  readJsonFileSync,
-  appendFileFromTop,
-} from "../services/file.js";
-
-const csvHeader =
-  "name,description,severity,message,path,startLine,startColumn,endLine,endColumn\n";
+import { makeDir, writeFile, readJsonFileSync } from "../services/file.js";
 
 export class Snyk {
   convertJsonToFormattedResult = async (filePath) => {
-    // appendFileFromTop(filePath, csvHeader);
     const formattedResults = [];
     await makeDir("./formattedResults");
 
