@@ -7,6 +7,10 @@ export const getLinesFromString = (str, from, to) => {
     : "";
 };
 
+export const getSingleLineFromString = (str, lineNumber) => {
+  return str ? str.split("\n")[lineNumber - 1]?.trim() : "";
+};
+
 export const removeLinesFromString = (str, blocksToRemove) => {
   if (!str) return "";
 
