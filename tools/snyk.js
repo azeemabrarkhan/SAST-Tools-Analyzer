@@ -1,4 +1,10 @@
-import { makeDir, writeFile, readJsonFileSync } from "../services/file.js";
+import {
+  makeDir,
+  writeFile,
+  readJsonFileSync,
+  readFile,
+} from "../services/file.js";
+import { getSingleLineFromString } from "../utils/text.js";
 
 export class Snyk {
   convertJsonToFormattedResult = async (filePath) => {
@@ -32,6 +38,11 @@ export class Snyk {
           properties: result.properties,
           similarResults: [],
         };
+
+        formattedResult.foundVulLine = getSingleLineFromString(
+          readFile(`./datasets/ossf/${formattedResult.vulPath}`),
+          formattedResult.lineNumber
+        );
 
         formattedResults.push(formattedResult);
       }

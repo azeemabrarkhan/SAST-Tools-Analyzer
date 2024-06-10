@@ -5,6 +5,7 @@ import {
   appendFileFromTop,
   readFile,
 } from "../services/file.js";
+import { getSingleLineFromString } from "../utils/text.js";
 
 const csvHeader =
   "name,description,severity,message,path,startLine,startColumn,endLine,endColumn\n";
@@ -45,6 +46,11 @@ export class CodeQl {
         properties: {},
         similarResults: [],
       };
+
+      formattedResult.foundVulLine = getSingleLineFromString(
+        readFile(`./datasets/ossf/${formattedResult.vulPath}`),
+        formattedResult.lineNumber
+      );
 
       formattedResults.push(formattedResult);
     }

@@ -1,5 +1,6 @@
 import { log } from "../services/logger.js";
-import { makeDir, writeFile } from "../services/file.js";
+import { makeDir, writeFile, readFile } from "../services/file.js";
+import { getSingleLineFromString } from "../utils/text.js";
 
 const baseUrl = `http://localhost:9000/api/issues/search?projects=${process.env.SONAR_QUBE_PROJECT_KEY}`;
 const API_LIMIT = 10_000;
@@ -103,6 +104,11 @@ export class Sonarqube {
         properties: {},
         similarResults: [],
       };
+
+      formattedResult.foundVulLine = getSingleLineFromString(
+        readFile(`./datasets/ossf/${formattedResult.vulPath}`),
+        formattedResult.lineNumber
+      );
 
       formattedResults.push(formattedResult);
     }
