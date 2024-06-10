@@ -88,7 +88,7 @@ export default class Ossf {
       metaInfo.lineNumber = prePatch.weaknesses[i].location.line;
       metaInfo.explanation = prePatch.weaknesses[i].explanation;
 
-      this.metaData.push(metaInfo);
+      this.metaData.push({ ...metaInfo });
     }
   };
 
