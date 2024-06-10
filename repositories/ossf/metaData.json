@@ -1616,7 +1616,7 @@
     "postPatch": "f71fb3ca96f4596135ee739d29dfed7cc7b25b4b",
     "vulPath": "vul/CVE-2021-31712/jpuri/react-draft-wysiwyg/222/f59ee8419cdbd45aab3bdfdf1995f112b09bbb6a/index.js",
     "fixPath": "fix/CVE-2021-31712/jpuri/react-draft-wysiwyg/222/f71fb3ca96f4596135ee739d29dfed7cc7b25b4b/index.js",
-    "lineNumber": 59,
+    "lineNumber": 35,
     "explanation": "react-draft-wysiwyg (aka React Draft Wysiwyg) before 1.14.6 allows a javascript: URi in a Link Target of the link decorator in decorators/Link/index.js when a draft is shared across users, leading to XSS.",
     "functionsInVul": [
       {
@@ -4723,7 +4723,7 @@
     "postPatch": "c33aaae609c7236a7cb555a62d8b99dfbcb5da09",
     "vulPath": "vul/CVE-2018-3725/herber/hekto/92/a3d942d8398a0907d0bbf2682f2fbd54ce73764e/hekto.js",
     "fixPath": "fix/CVE-2018-3725/herber/hekto/92/c33aaae609c7236a7cb555a62d8b99dfbcb5da09/hekto.js",
-    "lineNumber": 194,
+    "lineNumber": 116,
     "explanation": "Uncontrolled data used in path expression",
     "functionsInVul": [
       {
@@ -4748,7 +4748,7 @@
     "postPatch": "c33aaae609c7236a7cb555a62d8b99dfbcb5da09",
     "vulPath": "vul/CVE-2018-3725/herber/hekto/92/a3d942d8398a0907d0bbf2682f2fbd54ce73764e/hekto.js",
     "fixPath": "fix/CVE-2018-3725/herber/hekto/92/c33aaae609c7236a7cb555a62d8b99dfbcb5da09/hekto.js",
-    "lineNumber": 194,
+    "lineNumber": 138,
     "explanation": "Uncontrolled data used in path expression",
     "functionsInVul": [
       {
@@ -4773,7 +4773,7 @@
     "postPatch": "c33aaae609c7236a7cb555a62d8b99dfbcb5da09",
     "vulPath": "vul/CVE-2018-3725/herber/hekto/92/a3d942d8398a0907d0bbf2682f2fbd54ce73764e/hekto.js",
     "fixPath": "fix/CVE-2018-3725/herber/hekto/92/c33aaae609c7236a7cb555a62d8b99dfbcb5da09/hekto.js",
-    "lineNumber": 194,
+    "lineNumber": 141,
     "explanation": "Uncontrolled data used in path expression",
     "functionsInVul": [
       {
@@ -4798,7 +4798,7 @@
     "postPatch": "c33aaae609c7236a7cb555a62d8b99dfbcb5da09",
     "vulPath": "vul/CVE-2018-3725/herber/hekto/92/a3d942d8398a0907d0bbf2682f2fbd54ce73764e/hekto.js",
     "fixPath": "fix/CVE-2018-3725/herber/hekto/92/c33aaae609c7236a7cb555a62d8b99dfbcb5da09/hekto.js",
-    "lineNumber": 194,
+    "lineNumber": 152,
     "explanation": "Uncontrolled data used in path expression",
     "functionsInVul": [
       {
@@ -18254,7 +18254,7 @@
     "postPatch": "bd1e9e01c95cad24be706fb11be7d151cd99ed0a",
     "vulPath": "vul/CVE-2021-23364/browserslist/browserslist/221/209adf9e0051fa39a2b25354cffd493300f34b02/index.js",
     "fixPath": "fix/CVE-2021-23364/browserslist/browserslist/221/bd1e9e01c95cad24be706fb11be7d151cd99ed0a/index.js",
-    "lineNumber": 925,
+    "lineNumber": 802,
     "explanation": "The package browserslist from 4.0.0 and before 4.16.5 are vulnerable to Regular Expression Denial of Service (ReDoS) during parsing of queries.",
     "functionsInVul": [
       {
@@ -19035,7 +19035,7 @@
     "postPatch": "bd1e9e01c95cad24be706fb11be7d151cd99ed0a",
     "vulPath": "vul/CVE-2021-23364/browserslist/browserslist/221/209adf9e0051fa39a2b25354cffd493300f34b02/index.js",
     "fixPath": "fix/CVE-2021-23364/browserslist/browserslist/221/bd1e9e01c95cad24be706fb11be7d151cd99ed0a/index.js",
-    "lineNumber": 925,
+    "lineNumber": 827,
     "explanation": "The package browserslist from 4.0.0 and before 4.16.5 are vulnerable to Regular Expression Denial of Service (ReDoS) during parsing of queries.",
     "functionsInVul": [
       {
@@ -19816,7 +19816,7 @@
     "postPatch": "bd1e9e01c95cad24be706fb11be7d151cd99ed0a",
     "vulPath": "vul/CVE-2021-23364/browserslist/browserslist/221/209adf9e0051fa39a2b25354cffd493300f34b02/index.js",
     "fixPath": "fix/CVE-2021-23364/browserslist/browserslist/221/bd1e9e01c95cad24be706fb11be7d151cd99ed0a/index.js",
-    "lineNumber": 925,
+    "lineNumber": 855,
     "explanation": "The package browserslist from 4.0.0 and before 4.16.5 are vulnerable to Regular Expression Denial of Service (ReDoS) during parsing of queries.",
     "functionsInVul": [
       {
@@ -20597,7 +20597,7 @@
     "postPatch": "bd1e9e01c95cad24be706fb11be7d151cd99ed0a",
     "vulPath": "vul/CVE-2021-23364/browserslist/browserslist/221/209adf9e0051fa39a2b25354cffd493300f34b02/index.js",
     "fixPath": "fix/CVE-2021-23364/browserslist/browserslist/221/bd1e9e01c95cad24be706fb11be7d151cd99ed0a/index.js",
-    "lineNumber": 925,
+    "lineNumber": 890,
     "explanation": "The package browserslist from 4.0.0 and before 4.16.5 are vulnerable to Regular Expression Denial of Service (ReDoS) during parsing of queries.",
     "functionsInVul": [
       {
@@ -21378,7 +21378,7 @@
     "postPatch": "bd1e9e01c95cad24be706fb11be7d151cd99ed0a",
     "vulPath": "vul/CVE-2021-23364/browserslist/browserslist/221/209adf9e0051fa39a2b25354cffd493300f34b02/index.js",
     "fixPath": "fix/CVE-2021-23364/browserslist/browserslist/221/bd1e9e01c95cad24be706fb11be7d151cd99ed0a/index.js",
-    "lineNumber": 925,
+    "lineNumber": 921,
     "explanation": "The package browserslist from 4.0.0 and before 4.16.5 are vulnerable to Regular Expression Denial of Service (ReDoS) during parsing of queries.",
     "functionsInVul": [
       {
