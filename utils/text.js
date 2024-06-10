@@ -1,10 +1,12 @@
 export const getLinesFromString = (str, from, to) => {
-  return str
-    ? str
-        .split("\n")
-        .slice(from - 1, to + 1)
-        .join("\n")
-    : "";
+  if (str && from && to) {
+    return str
+      .split("\n")
+      .slice(from - 1, to + 1)
+      .join("\n");
+  } else {
+    return "";
+  }
 };
 
 export const getSingleLineFromString = (str, lineNumber) => {
