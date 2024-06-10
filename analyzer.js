@@ -1,7 +1,12 @@
 import { readJsonFileSync } from "./services/file.js";
 
 export default class Analyzer {
-  evaluateResult = (found, notFound, totalVulnerabilities) => {
+  evaluateResult = (
+    found,
+    notFound,
+    notRecognizedPatches,
+    totalVulnerabilities
+  ) => {
     // found = Hits that are included in the known vul set
     // notFound = Hits that are not included in the known vul set
 
@@ -18,6 +23,7 @@ export default class Analyzer {
     console.log("True Positive ", tp);
     console.log("False Positive ", fp);
     console.log("False Negative ", fn);
+    console.log("Not recognized patches ", notRecognizedPatches.length);
     console.log("Precision ", precision);
     console.log("Recall ", recall);
     console.log("F1 Score  ", f1);

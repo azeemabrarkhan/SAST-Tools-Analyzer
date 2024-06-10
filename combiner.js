@@ -4,6 +4,7 @@ import { makeDir, readJsonFileSync, writeFile } from "./services/file.js";
 export default class Combiner {
   found;
   notFound;
+  notRecognizedPatches;
   metaData;
   analyzer;
   analysisLevel;
@@ -13,6 +14,7 @@ export default class Combiner {
   constructor() {
     this.found = [];
     this.notFound = [];
+    this.notRecognizedPatches = [];
     this.metaData = readJsonFileSync(
       `${process.cwd()}\\repositories\\ossf\\metaData.json`
     );
@@ -97,7 +99,9 @@ export default class Combiner {
   setFoundAndNotFound = (results) => {
     this.found = [];
     this.notFound = [];
-    for (const resultSlice of results) {
+    for (const resultSlice of results.filter((r) =>
+      r.vulPath.startsWith("vul/")
+    )) {
       const actualVulsInTheCurrentFile = this.metaData.filter(
         (metaSlice) => metaSlice.vulPath === resultSlice.vulPath
       );
@@ -214,6 +218,94 @@ export default class Combiner {
             this.found.push(resultSlice);
           } else {
             this.notFound.push(resultSlice);
+          }
+          break;
+      }
+    }
+  };
+
+  setNotRecognizedPatches = (results) => {
+    this.notRecognizedPatches = [];
+
+    for (const resultSlice of results.filter((r) =>
+      r.vulPath.startsWith("fix/")
+    )) {
+      let metaRecords = this.metaData.filter(
+        (metaSlice) => metaSlice.fixPath === resultSlice.vulPath
+      );
+
+      switch (this.analysisLevel) {
+        case "file":
+          if (
+            this.found.find((f) =>
+              metaRecords.find((r) => r.vulPath === f.vulPath)
+            )
+          ) {
+            const alreadyFoundPatchNotRecognizedIndex =
+              this.notRecognizedPatches.findIndex(
+                (nr) => nr.vulPath === resultSlice.vulPath
+              );
+            if (alreadyFoundPatchNotRecognizedIndex < 0) {
+              this.notRecognizedPatches.push(resultSlice);
+            } else {
+              this.notRecognizedPatches[
+                alreadyFoundPatchNotRecognizedIndex
+              ].similarResults.push(resultSlice);
+            }
+          }
+          break;
+
+        case "function":
+          if (
+            this.found.find((f) =>
+              metaRecords.find(
+                (r) =>
+                  r.vulPath === f.vulPath &&
+                  this.getFunctionNameWithLineNumer(
+                    r.functionsInVul,
+                    resultSlice.lineNumber
+                  ) ===
+                    this.getFunctionNameWithLineNumer(
+                      r.functionsInVul,
+                      f.lineNumber
+                    )
+              )
+            )
+          ) {
+            const alreadyFoundPatchNotRecognizedIndex =
+              this.notRecognizedPatches.findIndex(
+                (nr) =>
+                  nr.vulPath === resultSlice.vulPath &&
+                  this.getFunctionNameWithLineNumer(
+                    metaRecords[0].functionsInVul,
+                    nr.lineNumber
+                  ) ===
+                    this.getFunctionNameWithLineNumer(
+                      metaRecords[0].functionsInVul,
+                      resultSlice.lineNumber
+                    )
+              );
+            if (alreadyFoundPatchNotRecognizedIndex < 0) {
+              this.notRecognizedPatches.push(resultSlice);
+            } else {
+              this.notRecognizedPatches[
+                alreadyFoundPatchNotRecognizedIndex
+              ].similarResults.push(resultSlice);
+            }
+          }
+          break;
+
+        case "line":
+          if (
+            this.found.find((f) =>
+              metaRecords.find(
+                (r) =>
+                  r.vulPath === f.vulPath &&
+                  resultSlice.lineNumber === f.lineNumber
+              )
+            )
+          ) {
+            this.notRecognizedPatches.push(resultSlice);
           }
           break;
       }
@@ -440,10 +532,12 @@ export default class Combiner {
       `***${this.toolOrLogicName}*** - ${this.analysisLevel.toUpperCase()}`
     );
     this.setFoundAndNotFound(results);
+    this.setNotRecognizedPatches(results);
     this.saveResultFile();
     this.analyzer.evaluateResult(
       this.found,
       this.notFound,
+      this.notRecognizedPatches,
       this.getTotalVulCount()
     );
   };
@@ -464,6 +558,10 @@ export default class Combiner {
     writeFile(
       `${path}/${this.analysisLevel}_false_positives.json`,
       JSON.stringify(this.notFound, null, 4)
+    );
+    writeFile(
+      `${path}/${this.analysisLevel}_not_recognized_patches.json`,
+      JSON.stringify(this.notRecognizedPatches, null, 4)
     );
   };
 
