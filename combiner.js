@@ -55,7 +55,7 @@ export default class Combiner {
     const fs = functions
       .filter((f) => f.startLine <= lineNumber && f.endLine >= lineNumber)
       .sort((fA, fB) => fB.startLine - fA.startLine);
-    return fs[0]?.name;
+    return fs[0]?.name ?? lineNumber;
   };
 
   getTotalVulCount = () => {
