@@ -1,5 +1,11 @@
 import Analyzer from "./analyzer.js";
-import { makeDir, readJsonFileSync, writeFile } from "./services/file.js";
+import {
+  makeDir,
+  readJsonFileSync,
+  writeFile,
+  readFile,
+} from "./services/file.js";
+import { getLinesFromString, getSingleLineFromString } from "./utils/text.js";
 
 export default class Combiner {
   found;
@@ -296,13 +302,29 @@ export default class Combiner {
           break;
 
         case "line":
+          const fixedFunctionName = this.getFunctionNameWithLineNumer(
+            metaRecords[0].functionsInVul,
+            resultSlice.lineNumber
+          );
+          const fixedFunction = metaRecords[0].functionsInVul.find(
+            (func) => fixedFunctionName === func.name
+          );
+          const fixedCode = getLinesFromString(
+            readFile(`./datasets/ossf/${resultSlice.vulPath}`),
+            fixedFunction?.startLine,
+            fixedFunction?.endLine
+          );
           if (
             this.found.find((f) =>
-              metaRecords.find(
-                (r) =>
-                  r.vulPath === f.vulPath &&
-                  resultSlice.lineNumber === f.lineNumber
-              )
+              metaRecords.find((r) => {
+                if (r.vulPath === f.vulPath) {
+                  const vulLine = getSingleLineFromString(
+                    readFile(`./datasets/ossf/${f.vulPath}`),
+                    f.lineNumber
+                  );
+                  return r.vulPath === f.vulPath && fixedCode.includes(vulLine);
+                }
+              })
             )
           ) {
             this.notRecognizedPatches.push(resultSlice);
