@@ -11,12 +11,10 @@ const csvHeader =
   "name,description,severity,message,path,startLine,startColumn,endLine,endColumn\n";
 
 export class CodeQl {
-  convertCsvToFormattedResult = async (filePath) => {
-    if (
-      !readFile(
-        "./datasets/ossf/javascript-security-experimental.csv"
-      ).startsWith(csvHeader)
-    ) {
+  convertCsvToFormattedResult = async () => {
+    const filePath = `${process.env.FILES_BASE_PATH}/${process.env.CODEQL_RESULT_FILENAME}`;
+
+    if (!readFile(filePath).startsWith(csvHeader)) {
       appendFileFromTop(filePath, csvHeader);
     }
 
@@ -48,7 +46,7 @@ export class CodeQl {
       };
 
       formattedResult.foundVulLine = getSingleLineFromString(
-        readFile(`./datasets/ossf/${formattedResult.vulPath}`),
+        readFile(`${process.env.FILES_BASE_PATH}/${formattedResult.vulPath}`),
         formattedResult.lineNumber
       );
 

@@ -2,7 +2,7 @@ log*.txt
 .env
 node_modules
 datasets
-# repositories/ossf/metaData.json
-repositories/javascriptDataset/metaData.json
+repositories/ossf/downloadedRecords.json
+repositories/javascriptDataset/downloadedRecords.json
 formattedResults/
 output/

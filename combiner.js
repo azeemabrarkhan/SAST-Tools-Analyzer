@@ -5,13 +5,13 @@ import {
   writeFile,
   readFile,
 } from "./services/file.js";
-import { getLinesFromString, getSingleLineFromString } from "./utils/text.js";
+import { getLinesFromString } from "./utils/text.js";
 
 export default class Combiner {
   found;
   notFound;
   notRecognizedPatches;
-  metaData;
+  recordsToAnalyze;
   analyzer;
   analysisLevel;
   toolOrLogicName;
@@ -21,12 +21,18 @@ export default class Combiner {
     this.found = [];
     this.notFound = [];
     this.notRecognizedPatches = [];
-    this.metaData = readJsonFileSync(
-      `${process.cwd()}/repositories/ossf/metaData.json`
+    this.recordsToAnalyze = readJsonFileSync(
+      `${process.cwd()}/${
+        process.env.RECORDS_TO_ANALYZE
+      }/downloadedRecords.json`
     );
     this.analyzer = new Analyzer();
     this.analysisLevel = "file";
-    this.selectedToolsNames = ["codeql", "sonarqube", "snyk"];
+    this.selectedToolsNames = [
+      process.env.TOOL1_NAME,
+      process.env.TOOL2_NAME,
+      process.env.TOOL3_NAME,
+    ];
   }
 
   printSelectedTools = () => {
@@ -65,40 +71,40 @@ export default class Combiner {
   };
 
   getTotalVulCount = () => {
-    let metaRecordsWithoutDuplicates = [];
+    let downloadedRecordsWithoutDuplicates = [];
     if (this.analysisLevel === "file") {
-      for (const metaSlice of this.metaData) {
+      for (const downloadedRecord of this.recordsToAnalyze) {
         if (
-          !metaRecordsWithoutDuplicates.find(
-            (r) => r.vulPath === metaSlice.vulPath
+          !downloadedRecordsWithoutDuplicates.find(
+            (r) => r.vulPath === downloadedRecord.vulPath
           )
         ) {
-          metaRecordsWithoutDuplicates.push(metaSlice);
+          downloadedRecordsWithoutDuplicates.push(downloadedRecord);
         }
       }
-      return metaRecordsWithoutDuplicates.length;
+      return downloadedRecordsWithoutDuplicates.length;
     } else if (this.analysisLevel === "function") {
-      for (const metaSlice of this.metaData) {
+      for (const downloadedRecord of this.recordsToAnalyze) {
         if (
-          !metaRecordsWithoutDuplicates.find(
+          !downloadedRecordsWithoutDuplicates.find(
             (r) =>
-              r.vulPath === metaSlice.vulPath &&
+              r.vulPath === downloadedRecord.vulPath &&
               this.getFunctionNameWithLineNumer(
                 r.functionsInVul,
                 r.lineNumber
               ) ===
                 this.getFunctionNameWithLineNumer(
                   r.functionsInVul,
-                  metaSlice.lineNumber
+                  downloadedRecord.lineNumber
                 )
           )
         ) {
-          metaRecordsWithoutDuplicates.push(metaSlice);
+          downloadedRecordsWithoutDuplicates.push(downloadedRecord);
         }
       }
-      return metaRecordsWithoutDuplicates.length;
+      return downloadedRecordsWithoutDuplicates.length;
     } else {
-      return this.metaData.length;
+      return this.recordsToAnalyze.length;
     }
   };
 
@@ -108,8 +114,8 @@ export default class Combiner {
     for (const resultSlice of results.filter((r) =>
       r.vulPath.startsWith("vul/")
     )) {
-      const actualVulsInTheCurrentFile = this.metaData.filter(
-        (metaSlice) => metaSlice.vulPath === resultSlice.vulPath
+      const actualVulsInTheCurrentFile = this.recordsToAnalyze.filter(
+        (downloadedRecord) => downloadedRecord.vulPath === resultSlice.vulPath
       );
 
       let indexOfAlreadyFoundOrNotFound = -1;
@@ -236,15 +242,15 @@ export default class Combiner {
     for (const resultSlice of results.filter((r) =>
       r.vulPath.startsWith("fix/")
     )) {
-      let metaRecords = this.metaData.filter(
-        (metaSlice) => metaSlice.fixPath === resultSlice.vulPath
+      let downloadedRecords = this.recordsToAnalyze.filter(
+        (downloadedRecord) => downloadedRecord.fixPath === resultSlice.vulPath
       );
 
       switch (this.analysisLevel) {
         case "file":
           if (
             this.found.find((f) =>
-              metaRecords.find((r) => r.vulPath === f.vulPath)
+              downloadedRecords.find((r) => r.vulPath === f.vulPath)
             )
           ) {
             const alreadyFoundPatchNotRecognizedIndex =
@@ -264,7 +270,7 @@ export default class Combiner {
         case "function":
           if (
             this.found.find((f) =>
-              metaRecords.find(
+              downloadedRecords.find(
                 (r) =>
                   r.vulPath === f.vulPath &&
                   this.getFunctionNameWithLineNumer(
@@ -283,11 +289,11 @@ export default class Combiner {
                 (nr) =>
                   nr.vulPath === resultSlice.vulPath &&
                   this.getFunctionNameWithLineNumer(
-                    metaRecords[0].functionsInVul,
+                    downloadedRecords[0].functionsInVul,
                     nr.lineNumber
                   ) ===
                     this.getFunctionNameWithLineNumer(
-                      metaRecords[0].functionsInVul,
+                      downloadedRecords[0].functionsInVul,
                       resultSlice.lineNumber
                     )
               );
@@ -303,14 +309,14 @@ export default class Combiner {
 
         case "line":
           const fixedFunctionName = this.getFunctionNameWithLineNumer(
-            metaRecords[0].functionsInFix,
+            downloadedRecords[0].functionsInFix,
             resultSlice.lineNumber
           );
-          const fixedFunction = metaRecords[0].functionsInFix.find(
+          const fixedFunction = downloadedRecords[0].functionsInFix.find(
             (func) => fixedFunctionName === func.name
           );
           const fixedCode = getLinesFromString(
-            readFile(`./datasets/ossf/${resultSlice.vulPath}`),
+            readFile(`${process.env.FILES_BASE_PATH}/${resultSlice.vulPath}`),
             fixedFunction?.startLine,
             fixedFunction?.endLine
           );
@@ -318,7 +324,7 @@ export default class Combiner {
             this.found.find(
               (f) =>
                 fixedCode.includes(f.foundVulLine) &&
-                metaRecords.find((r) => r.vulPath === f.vulPath)
+                downloadedRecords.find((r) => r.vulPath === f.vulPath)
             )
           ) {
             this.notRecognizedPatches.push(resultSlice);
@@ -332,25 +338,31 @@ export default class Combiner {
     let toolResult;
 
     switch (toolName) {
-      case "codeql":
+      case process.env.TOOL1_NAME:
         toolResult = readJsonFileSync(
-          `${process.cwd()}/formattedResults/formattedResult-codeql.json`
+          `${process.cwd()}/formattedResults/formattedResult-${
+            process.env.TOOL1_NAME
+          }.json`
         );
-        this.toolOrLogicName = "CODE-QL";
+        this.toolOrLogicName = process.env.TOOL1_NAME?.toUpperCase();
         break;
 
-      case "sonarqube":
+      case process.env.TOOL2_NAME:
         toolResult = readJsonFileSync(
-          `${process.cwd()}/formattedResults/formattedResult-sonarqube.json`
+          `${process.cwd()}/formattedResults/formattedResult-${
+            process.env.TOOL2_NAME
+          }.json`
         );
-        this.toolOrLogicName = "SONAR QUBE";
+        this.toolOrLogicName = process.env.TOOL2_NAME?.toUpperCase();
         break;
 
-      case "snyk":
+      case process.env.TOOL3_NAME:
         toolResult = readJsonFileSync(
-          `${process.cwd()}/formattedResults/formattedResult-snyk.json`
+          `${process.cwd()}/formattedResults/formattedResult-${
+            process.env.TOOL3_NAME
+          }.json`
         );
-        this.toolOrLogicName = "SNYK";
+        this.toolOrLogicName = process.env.TOOL3_NAME?.toUpperCase();
         break;
     }
 
@@ -376,8 +388,9 @@ export default class Combiner {
       let isVulnerable = true;
 
       const functionsInTheCurrentFile =
-        this.metaData.find((metaSlice) => metaSlice.vulPath === vul.vulPath)
-          ?.functionsInVul ?? [];
+        this.recordsToAnalyze.find(
+          (downloadedRecord) => downloadedRecord.vulPath === vul.vulPath
+        )?.functionsInVul ?? [];
 
       let indexOfAlreadyFound = -1;
 
@@ -480,8 +493,8 @@ export default class Combiner {
           let indexOfAlreadyFound;
 
           const functionsInTheCurrentFile =
-            this.metaData.find(
-              (metaSlice) => metaSlice.vulPath === result.vulPath
+            this.recordsToAnalyze.find(
+              (downloadedRecord) => downloadedRecord.vulPath === result.vulPath
             )?.functionsInVul ?? [];
 
           switch (this.analysisLevel) {

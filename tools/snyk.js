@@ -7,7 +7,9 @@ import {
 import { getSingleLineFromString } from "../utils/text.js";
 
 export class Snyk {
-  convertJsonToFormattedResult = async (filePath) => {
+  convertJsonToFormattedResult = async () => {
+    const filePath = `${process.env.FILES_BASE_PATH}/${process.env.SNYK_RESULT_FILENAME}`;
+
     const formattedResults = [];
     await makeDir("./formattedResults");
 
@@ -40,7 +42,7 @@ export class Snyk {
         };
 
         formattedResult.foundVulLine = getSingleLineFromString(
-          readFile(`./datasets/ossf/${formattedResult.vulPath}`),
+          readFile(`${process.env.FILES_BASE_PATH}/${formattedResult.vulPath}`),
           formattedResult.lineNumber
         );
 

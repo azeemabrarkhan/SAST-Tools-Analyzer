@@ -12,17 +12,17 @@ import { getSingleLineFromString } from "../../utils/text.js";
 
 export default class Ossf {
   currentDir;
-  metaData;
-  metaDataFilePath;
+  downloadedRecords;
+  downloadedRecordsFilePath;
   statsFilePath;
   abstractSyntaxTree;
   numberOfFilesDownloaded;
 
   constructor() {
     this.currentDir = process.cwd();
-    this.metaData = [];
-    this.datasetFilePath = `${this.currentDir}/repositories/ossf/ossf.json`;
-    this.metaDataFilePath = `${this.currentDir}/repositories/ossf/metaData.json`;
+    this.downloadedRecords = [];
+    this.datasetFilePath = `${this.currentDir}/repositories/ossf/records.json`;
+    this.downloadedRecordsFilePath = `${this.currentDir}/repositories/ossf/downloadedRecords.json`;
     this.statsFilePath = `${this.currentDir}/datasets/ossf/stats.txt`;
     this.abstractSyntaxTree = new AbstractSynTree();
     this.numberOfFilesDownloaded = 0;
@@ -40,7 +40,7 @@ export default class Ossf {
     await Promise.all(promises);
 
     const operationStats = `
-    Total number of vulnerablities in records: ${this.metaData.length}
+    Total number of vulnerablities in records: ${this.downloadedRecords.length}
     Total vulnerable files downloaded: ${this.numberOfFilesDownloaded}
     Total fix files downloaded: ${this.numberOfFilesDownloaded}
     Total files downloaded: ${this.numberOfFilesDownloaded * 2}
@@ -50,7 +50,10 @@ export default class Ossf {
 
     console.log(operationStats);
     writeFile(this.statsFilePath, operationStats);
-    writeFile(this.metaDataFilePath, JSON.stringify(this.metaData, null, 4));
+    writeFile(
+      this.downloadedRecordsFilePath,
+      JSON.stringify(this.downloadedRecords, null, 4)
+    );
     this.numberOfFilesDownloaded = 0;
   };
 
@@ -61,7 +64,7 @@ export default class Ossf {
     }`;
   };
 
-  createMetaObj = (
+  createdownloadedRecordObj = (
     commit,
     ownerAndProject,
     vulFileSourceCode,
@@ -70,7 +73,7 @@ export default class Ossf {
   ) => {
     const { CVE, CWEs, repository: repoPath, prePatch, postPatch } = commit;
 
-    const metaInfo = {
+    const record = {
       CVE,
       CWEs,
       repoPath,
@@ -94,21 +97,21 @@ export default class Ossf {
         prePatch.weaknesses[i].location
       );
 
-      metaInfo.vulPath = `vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}/${fileNameWithExt}`;
+      record.vulPath = `vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}/${fileNameWithExt}`;
 
-      metaInfo.fixPath = `fix/${CVE}/${ownerAndProject}/${index}/${commit.postPatch.commit}/${fileNameWithExt}`;
+      record.fixPath = `fix/${CVE}/${ownerAndProject}/${index}/${commit.postPatch.commit}/${fileNameWithExt}`;
 
-      metaInfo.lineNumber = prePatch.weaknesses[i].location.line;
-      metaInfo.explanation = prePatch.weaknesses[i].explanation;
-      metaInfo.fullFileName = prePatch.weaknesses[i].location.file;
-      metaInfo.fileName = fileNameWithExt;
+      record.lineNumber = prePatch.weaknesses[i].location.line;
+      record.explanation = prePatch.weaknesses[i].explanation;
+      record.fullFileName = prePatch.weaknesses[i].location.file;
+      record.fileName = fileNameWithExt;
 
-      metaInfo.vulLine = getSingleLineFromString(
+      record.vulLine = getSingleLineFromString(
         vulFileSourceCode,
-        metaInfo.lineNumber
+        record.lineNumber
       );
 
-      this.metaData.push({ ...metaInfo });
+      this.downloadedRecords.push({ ...record });
     }
   };
 
@@ -166,7 +169,7 @@ export default class Ossf {
           })
           .then((vulFileSourceCode) => {
             try {
-              this.createMetaObj(
+              this.createdownloadedRecordObj(
                 commit,
                 ownerAndProject,
                 vulFileSourceCode,

@@ -106,7 +106,7 @@ export class Sonarqube {
       };
 
       formattedResult.foundVulLine = getSingleLineFromString(
-        readFile(`./datasets/ossf/${formattedResult.vulPath}`),
+        readFile(`${process.env.FILES_BASE_PATH}/${formattedResult.vulPath}`),
         formattedResult.lineNumber
       );
 

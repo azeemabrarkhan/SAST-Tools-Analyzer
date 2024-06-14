@@ -27,7 +27,7 @@ const finalAIPrompt = `All of the code snippets have been provided, now please p
 export default class JavascriptDataset {
   currentDir;
   datasetFilePath;
-  metaDataFilePath;
+  downloadedRecordsFilePath;
   statsFilePath;
   aiChatHistoryPath;
   downloadedRecords;
@@ -36,8 +36,8 @@ export default class JavascriptDataset {
 
   constructor() {
     this.currentDir = process.cwd();
-    this.datasetFilePath = `repositories/javascriptDataset/dataset.csv`;
-    this.metaDataFilePath = `${this.currentDir}/repositories/javascriptDataset/metaData.json`;
+    this.datasetFilePath = `repositories/javascriptDataset/records.csv`;
+    this.downloadedRecordsFilePath = `${this.currentDir}/repositories/javascriptDataset/downloadedRecords.json`;
     this.statsFilePath = `${this.currentDir}/datasets/javascriptDataset/stats.txt`;
     this.aiChatHistoryPath = `${this.currentDir}/datasets/javascriptDataset/aiChatHistory.txt`;
     this.downloadedRecords = [];
@@ -97,7 +97,7 @@ export default class JavascriptDataset {
     console.log(operationStats);
     writeFile(this.statsFilePath, operationStats);
     writeFile(
-      this.metaDataFilePath,
+      this.downloadedRecordsFilePath,
       JSON.stringify(this.downloadedRecords, null, 2)
     );
     if (this.shouldAnalyzeRecordsWithAI) {
