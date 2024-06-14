@@ -315,16 +315,10 @@ export default class Combiner {
             fixedFunction?.endLine
           );
           if (
-            this.found.find((f) =>
-              metaRecords.find((r) => {
-                if (r.vulPath === f.vulPath) {
-                  const vulLine = getSingleLineFromString(
-                    readFile(`./datasets/ossf/${f.vulPath}`),
-                    f.lineNumber
-                  );
-                  return r.vulPath === f.vulPath && fixedCode.includes(vulLine);
-                }
-              })
+            this.found.find(
+              (f) =>
+                fixedCode.includes(f.foundVulLine) &&
+                metaRecords.find((r) => r.vulPath === f.vulPath)
             )
           ) {
             this.notRecognizedPatches.push(resultSlice);
