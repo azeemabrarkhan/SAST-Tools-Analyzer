@@ -15,7 +15,7 @@ export default class Combiner {
   analyzer;
   analysisLevel;
   toolOrLogicName;
-  selectedToolsNames;
+  availableTools;
 
   constructor() {
     this.found = [];
@@ -28,27 +28,28 @@ export default class Combiner {
     );
     this.analyzer = new Analyzer();
     this.analysisLevel = "file";
-    this.selectedToolsNames = [
-      process.env.TOOL1_NAME,
-      process.env.TOOL2_NAME,
-      process.env.TOOL3_NAME,
+    this.availableTools = [
+      { name: process.env.TOOL1_NAME, isActive: true },
+      { name: process.env.TOOL2_NAME, isActive: true },
+      { name: process.env.TOOL3_NAME, isActive: true },
     ];
   }
 
-  printSelectedTools = () => {
-    console.log(this.selectedToolsNames);
+  getActiveTools = () => {
+    return this.availableTools
+      .filter((tool) => tool.isActive)
+      .map((tool) => tool.name);
   };
 
-  selectTool = (toolName) => {
-    if (!this.selectedToolsNames.includes(toolName)) {
-      this.selectedToolsNames.push(toolName);
-    }
+  printActiveTools = () => {
+    console.log(this.getActiveTools());
   };
 
-  deselectTool = (toolName) => {
-    this.selectedToolsNames = this.selectedToolsNames.filter(
-      (selectedToolName) => selectedToolName !== toolName
+  switchTool = (toolName) => {
+    const index = this.availableTools.findIndex(
+      (tool) => tool.name === toolName
     );
+    this.availableTools[index].isActive = !this.availableTools[index].isActive;
   };
 
   analyzeOnFileLevel = () => {
@@ -369,7 +370,7 @@ export default class Combiner {
 
   withAndLogic = () => {
     this.toolOrLogicName = "AND LOGIC";
-    const fileNames = this.selectedToolsNames.map(
+    const fileNames = this.getActiveTools().map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
     let toolResults = [];
@@ -476,7 +477,7 @@ export default class Combiner {
 
   withOrLogic = () => {
     this.toolOrLogicName = "OR LOGIC";
-    const fileNames = this.selectedToolsNames.map(
+    const fileNames = this.getActiveTools().map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
     let results = [];
@@ -552,7 +553,7 @@ export default class Combiner {
       this.toolOrLogicName === "OR LOGIC" ||
       this.toolOrLogicName === "AND LOGIC"
     ) {
-      this.printSelectedTools();
+      this.printActiveTools();
     }
     console.log(
       `***${this.toolOrLogicName}*** - ${this.analysisLevel.toUpperCase()}`
@@ -574,7 +575,7 @@ export default class Combiner {
       this.toolOrLogicName === "OR LOGIC" ||
       this.toolOrLogicName === "AND LOGIC"
     ) {
-      path += `${this.selectedToolsNames.join("_")}`;
+      path += `${this.getActiveTools().join("_")}`;
     }
     makeDir(path);
     writeFile(
