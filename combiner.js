@@ -71,38 +71,38 @@ export default class Combiner {
   };
 
   getTotalVulCount = () => {
-    let downloadedRecordsWithoutDuplicates = [];
+    let recordsToAnalyzeWithoutDuplicates = [];
     if (this.analysisLevel === "file") {
-      for (const downloadedRecord of this.recordsToAnalyze) {
+      for (const record of this.recordsToAnalyze) {
         if (
-          !downloadedRecordsWithoutDuplicates.find(
-            (r) => r.vulPath === downloadedRecord.vulPath
+          !recordsToAnalyzeWithoutDuplicates.find(
+            (r) => r.vulPath === record.vulPath
           )
         ) {
-          downloadedRecordsWithoutDuplicates.push(downloadedRecord);
+          recordsToAnalyzeWithoutDuplicates.push(record);
         }
       }
-      return downloadedRecordsWithoutDuplicates.length;
+      return recordsToAnalyzeWithoutDuplicates.length;
     } else if (this.analysisLevel === "function") {
-      for (const downloadedRecord of this.recordsToAnalyze) {
+      for (const record of this.recordsToAnalyze) {
         if (
-          !downloadedRecordsWithoutDuplicates.find(
+          !recordsToAnalyzeWithoutDuplicates.find(
             (r) =>
-              r.vulPath === downloadedRecord.vulPath &&
+              r.vulPath === record.vulPath &&
               this.getFunctionNameWithLineNumer(
                 r.functionsInVul,
                 r.lineNumber
               ) ===
                 this.getFunctionNameWithLineNumer(
                   r.functionsInVul,
-                  downloadedRecord.lineNumber
+                  record.lineNumber
                 )
           )
         ) {
-          downloadedRecordsWithoutDuplicates.push(downloadedRecord);
+          recordsToAnalyzeWithoutDuplicates.push(record);
         }
       }
-      return downloadedRecordsWithoutDuplicates.length;
+      return recordsToAnalyzeWithoutDuplicates.length;
     } else {
       return this.recordsToAnalyze.length;
     }
@@ -115,7 +115,7 @@ export default class Combiner {
       r.vulPath.startsWith("vul/")
     )) {
       const actualVulsInTheCurrentFile = this.recordsToAnalyze.filter(
-        (downloadedRecord) => downloadedRecord.vulPath === resultSlice.vulPath
+        (record) => record.vulPath === resultSlice.vulPath
       );
 
       let indexOfAlreadyFoundOrNotFound = -1;
@@ -242,16 +242,14 @@ export default class Combiner {
     for (const resultSlice of results.filter((r) =>
       r.vulPath.startsWith("fix/")
     )) {
-      let downloadedRecords = this.recordsToAnalyze.filter(
-        (downloadedRecord) => downloadedRecord.fixPath === resultSlice.vulPath
+      let records = this.recordsToAnalyze.filter(
+        (record) => record.fixPath === resultSlice.vulPath
       );
 
       switch (this.analysisLevel) {
         case "file":
           if (
-            this.found.find((f) =>
-              downloadedRecords.find((r) => r.vulPath === f.vulPath)
-            )
+            this.found.find((f) => records.find((r) => r.vulPath === f.vulPath))
           ) {
             const alreadyFoundPatchNotRecognizedIndex =
               this.notRecognizedPatches.findIndex(
@@ -270,7 +268,7 @@ export default class Combiner {
         case "function":
           if (
             this.found.find((f) =>
-              downloadedRecords.find(
+              records.find(
                 (r) =>
                   r.vulPath === f.vulPath &&
                   this.getFunctionNameWithLineNumer(
@@ -289,11 +287,11 @@ export default class Combiner {
                 (nr) =>
                   nr.vulPath === resultSlice.vulPath &&
                   this.getFunctionNameWithLineNumer(
-                    downloadedRecords[0].functionsInVul,
+                    records[0].functionsInVul,
                     nr.lineNumber
                   ) ===
                     this.getFunctionNameWithLineNumer(
-                      downloadedRecords[0].functionsInVul,
+                      records[0].functionsInVul,
                       resultSlice.lineNumber
                     )
               );
@@ -309,10 +307,10 @@ export default class Combiner {
 
         case "line":
           const fixedFunctionName = this.getFunctionNameWithLineNumer(
-            downloadedRecords[0].functionsInFix,
+            records[0].functionsInFix,
             resultSlice.lineNumber
           );
-          const fixedFunction = downloadedRecords[0].functionsInFix.find(
+          const fixedFunction = records[0].functionsInFix.find(
             (func) => fixedFunctionName === func.name
           );
           const fixedCode = getLinesFromString(
@@ -324,7 +322,7 @@ export default class Combiner {
             this.found.find(
               (f) =>
                 fixedCode.includes(f.foundVulLine) &&
-                downloadedRecords.find((r) => r.vulPath === f.vulPath)
+                records.find((r) => r.vulPath === f.vulPath)
             )
           ) {
             this.notRecognizedPatches.push(resultSlice);
@@ -388,9 +386,8 @@ export default class Combiner {
       let isVulnerable = true;
 
       const functionsInTheCurrentFile =
-        this.recordsToAnalyze.find(
-          (downloadedRecord) => downloadedRecord.vulPath === vul.vulPath
-        )?.functionsInVul ?? [];
+        this.recordsToAnalyze.find((record) => record.vulPath === vul.vulPath)
+          ?.functionsInVul ?? [];
 
       let indexOfAlreadyFound = -1;
 
@@ -494,7 +491,7 @@ export default class Combiner {
 
           const functionsInTheCurrentFile =
             this.recordsToAnalyze.find(
-              (downloadedRecord) => downloadedRecord.vulPath === result.vulPath
+              (record) => record.vulPath === result.vulPath
             )?.functionsInVul ?? [];
 
           switch (this.analysisLevel) {
