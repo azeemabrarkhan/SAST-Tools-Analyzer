@@ -169,7 +169,6 @@ export default class JavascriptDataset {
           `${fullVulPath}/record.txt`,
           JSON.stringify(record, null, 2)
         );
-        this.downloadedRecords.push(record);
       })
       .catch((err) => {
         isSuccessful = false;
@@ -180,6 +179,7 @@ export default class JavascriptDataset {
       .finally(() => {
         record.vulPath = `${record.vulPath}/${record.fileName}`;
         record.fixPath = `${record.fixPath}/${record.fileName}`;
+        this.downloadedRecords.push(record);
         console.log(
           `${isSuccessful ? "SUCCESS" : "FAILED"} - download ${
             record.fileName
