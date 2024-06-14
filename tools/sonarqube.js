@@ -22,7 +22,7 @@ export class Sonarqube {
     });
   };
 
-  fetchResultsFromServer = async (issueType) => {
+  convertTypeToFormattedResult = async (issueType) => {
     let totalIssues;
     try {
       const response = await this.querySonarQubeServer(
