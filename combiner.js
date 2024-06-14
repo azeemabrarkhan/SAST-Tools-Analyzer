@@ -310,7 +310,7 @@ export default class Combiner {
             (func) => fixedFunctionName === func.name
           );
           const fixedCode = getLinesFromString(
-            readFile(`./datasets/ossf/${resultSlice.fixPath}`),
+            readFile(`./datasets/ossf/${resultSlice.vulPath}`),
             fixedFunction?.startLine,
             fixedFunction?.endLine
           );
