@@ -6,7 +6,7 @@ let logFilePath;
 let lineNumber;
 
 export const createNewLogFile = () => {
-  logFilePath = `${currentDir}\\log-${getTimeStamp()}.txt`;
+  logFilePath = `${currentDir}/log-${getTimeStamp()}.txt`;
   lineNumber = 1;
 };
 
