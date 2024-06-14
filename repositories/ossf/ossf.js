@@ -8,6 +8,7 @@ import {
 import { fetchFile } from "../../services/http.js";
 import { log } from "../../services/logger.js";
 import AbstractSynTree from "../../services/abstractSynTree.js";
+import { getSingleLineFromString } from "../../utils/text.js";
 
 export default class Ossf {
   currentDir;
@@ -20,9 +21,9 @@ export default class Ossf {
   constructor() {
     this.currentDir = process.cwd();
     this.metaData = [];
-    this.datasetFilePath = `${this.currentDir}\\repositories\\ossf\\ossf.json`;
-    this.metaDataFilePath = `${this.currentDir}\\repositories\\ossf\\metaData.json`;
-    this.statsFilePath = `${this.currentDir}\\datasets\\ossf\\stats.txt`;
+    this.datasetFilePath = `${this.currentDir}/repositories/ossf/ossf.json`;
+    this.metaDataFilePath = `${this.currentDir}/repositories/ossf/metaData.json`;
+    this.statsFilePath = `${this.currentDir}/datasets/ossf/stats.txt`;
     this.abstractSyntaxTree = new AbstractSynTree();
     this.numberOfFilesDownloaded = 0;
   }
@@ -60,20 +61,32 @@ export default class Ossf {
     }`;
   };
 
-  createMetaObj = (commit, ownerAndProject, sourceCode, index) => {
-    const { CVE, CWEs, repository, prePatch, postPatch } = commit;
+  createMetaObj = (
+    commit,
+    ownerAndProject,
+    vulFileSourceCode,
+    fixFileSourceCode,
+    index
+  ) => {
+    const { CVE, CWEs, repository: repoPath, prePatch, postPatch } = commit;
 
     const metaInfo = {
       CVE,
       CWEs,
-      repository,
+      repoPath,
       prePatch: prePatch.commit,
       postPatch: postPatch.commit,
       vulPath: "",
       fixPath: "",
       lineNumber: 0,
       explanation: "",
-      functionsInVul: this.abstractSyntaxTree.getFunctionsLocations(sourceCode),
+      fullFileName: "",
+      fileName: "",
+      vulLine: "",
+      functionsInVul:
+        this.abstractSyntaxTree.getFunctionsLocations(vulFileSourceCode),
+      functionsInFix:
+        this.abstractSyntaxTree.getFunctionsLocations(fixFileSourceCode),
     };
 
     for (let i = 0; i < prePatch.weaknesses.length; i++) {
@@ -87,6 +100,13 @@ export default class Ossf {
 
       metaInfo.lineNumber = prePatch.weaknesses[i].location.line;
       metaInfo.explanation = prePatch.weaknesses[i].explanation;
+      metaInfo.fullFileName = prePatch.weaknesses[i].location.file;
+      metaInfo.fileName = fileNameWithExt;
+
+      metaInfo.vulLine = getSingleLineFromString(
+        vulFileSourceCode,
+        metaInfo.lineNumber
+      );
 
       this.metaData.push({ ...metaInfo });
     }
@@ -98,26 +118,11 @@ export default class Ossf {
     const splittedUrl = repository.split("/");
     const ownerAndProject = `${splittedUrl[3]}/${splittedUrl[4].split(".")[0]}`;
 
-    const vulPath = `${
-      this.currentDir
-    }\\datasets\\ossf\\vul\\${CVE}\\${ownerAndProject.replace(
-      "/",
-      "\\"
-    )}\\${index}\\${prePatch.commit}`;
+    const vulPath = `${this.currentDir}/datasets/ossf/vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}`;
 
-    const fixPath = `${
-      this.currentDir
-    }\\datasets\\ossf\\fix\\${CVE}\\${ownerAndProject.replace(
-      "/",
-      "\\"
-    )}\\${index}\\${postPatch.commit}`;
+    const fixPath = `${this.currentDir}/datasets/ossf/fix/${CVE}/${ownerAndProject}/${index}/${postPatch.commit}`;
 
-    const vulPathForCombinedDataset = `${
-      this.currentDir
-    }\\datasets\\combinedDataset\\vul\\${CVE}\\${ownerAndProject.replace(
-      "/",
-      "\\"
-    )}\\${index}\\${prePatch.commit}`;
+    const vulPathForCombinedDataset = `${this.currentDir}/datasets/combinedDataset/vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}`;
 
     makeDir(vulPath);
     makeDir(fixPath);
@@ -134,43 +139,51 @@ export default class Ossf {
     );
 
     let isSuccessful = true;
+    let fixFile = "";
 
     return fetchFile(fixFileUrl)
-      .then((sourceCode) => {
-        writeFileAsync(`${fixPath}\\${fileNameWithExt}`, sourceCode);
+      .then((fixFileSourceCode) => {
+        writeFileAsync(`${fixPath}/${fileNameWithExt}`, fixFileSourceCode);
         writeFileAsync(
-          `${fixPath}\\weaknesses.txt`,
+          `${fixPath}/weaknesses.txt`,
           JSON.stringify(prePatch.weaknesses, null, 2)
         );
+        fixFile = fixFileSourceCode;
       })
       .then(() =>
         fetchFile(vulFileUrl)
-          .then((sourceCode) => {
-            writeFileAsync(`${vulPath}\\${fileNameWithExt}`, sourceCode);
+          .then((vulFileSourceCode) => {
+            writeFileAsync(`${vulPath}/${fileNameWithExt}`, vulFileSourceCode);
             writeFileAsync(
-              `${vulPathForCombinedDataset}\\${fileNameWithExt}`,
-              sourceCode
+              `${vulPathForCombinedDataset}/${fileNameWithExt}`,
+              vulFileSourceCode
             );
             writeFileAsync(
-              `${vulPath}\\weaknesses.txt`,
+              `${vulPath}/weaknesses.txt`,
               JSON.stringify(prePatch.weaknesses, null, 2)
             );
-            return sourceCode;
+            return vulFileSourceCode;
           })
-          .then((sourceCode) => {
+          .then((vulFileSourceCode) => {
             try {
-              this.createMetaObj(commit, ownerAndProject, sourceCode, index);
+              this.createMetaObj(
+                commit,
+                ownerAndProject,
+                vulFileSourceCode,
+                fixFile,
+                index
+              );
               this.numberOfFilesDownloaded++;
             } catch (err) {
               isSuccessful = false;
               log(
-                `ERROR, while splitting source file into functions ${vulPath}\\${fileNameWithExt} - error trace: ${err}`
+                `ERROR, while splitting source file into functions ${vulPath}/${fileNameWithExt} - error trace: ${err}`
               );
-              deleteFile(`${fixPath}\\${fileNameWithExt}`);
-              deleteFile(`${fixPath}\\weaknesses.txt`);
-              deleteFile(`${vulPath}\\${fileNameWithExt}`);
-              deleteFile(`${vulPath}\\weaknesses.txt`);
-              deleteFile(`${vulPathForCombinedDataset}\\${fileNameWithExt}`);
+              deleteFile(`${fixPath}/${fileNameWithExt}`);
+              deleteFile(`${fixPath}/weaknesses.txt`);
+              deleteFile(`${vulPath}/${fileNameWithExt}`);
+              deleteFile(`${vulPath}/weaknesses.txt`);
+              deleteFile(`${vulPathForCombinedDataset}/${fileNameWithExt}`);
             }
           })
           .catch((err) => {
@@ -178,8 +191,8 @@ export default class Ossf {
             log(
               `ERROR, while fetching pre-fix file from the url: ${vulFileUrl} - error trace: ${err}`
             );
-            deleteFile(`${fixPath}\\${fileNameWithExt}`);
-            deleteFile(`${fixPath}\\weaknesses.txt`);
+            deleteFile(`${fixPath}/${fileNameWithExt}`);
+            deleteFile(`${fixPath}/weaknesses.txt`);
           })
       )
       .catch((err) => {

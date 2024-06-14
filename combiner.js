@@ -22,7 +22,7 @@ export default class Combiner {
     this.notFound = [];
     this.notRecognizedPatches = [];
     this.metaData = readJsonFileSync(
-      `${process.cwd()}\\repositories\\ossf\\metaData.json`
+      `${process.cwd()}/repositories/ossf/metaData.json`
     );
     this.analyzer = new Analyzer();
     this.analysisLevel = "file";
@@ -303,14 +303,14 @@ export default class Combiner {
 
         case "line":
           const fixedFunctionName = this.getFunctionNameWithLineNumer(
-            metaRecords[0].functionsInVul,
+            metaRecords[0].functionsInFix,
             resultSlice.lineNumber
           );
-          const fixedFunction = metaRecords[0].functionsInVul.find(
+          const fixedFunction = metaRecords[0].functionsInFix.find(
             (func) => fixedFunctionName === func.name
           );
           const fixedCode = getLinesFromString(
-            readFile(`./datasets/ossf/${resultSlice.vulPath}`),
+            readFile(`./datasets/ossf/${resultSlice.fixPath}`),
             fixedFunction?.startLine,
             fixedFunction?.endLine
           );
@@ -340,21 +340,21 @@ export default class Combiner {
     switch (toolName) {
       case "codeql":
         toolResult = readJsonFileSync(
-          `${process.cwd()}\\formattedResults\\formattedResult-codeql.json`
+          `${process.cwd()}/formattedResults/formattedResult-codeql.json`
         );
         this.toolOrLogicName = "CODE-QL";
         break;
 
       case "sonarqube":
         toolResult = readJsonFileSync(
-          `${process.cwd()}\\formattedResults\\formattedResult-sonarqube.json`
+          `${process.cwd()}/formattedResults/formattedResult-sonarqube.json`
         );
         this.toolOrLogicName = "SONAR QUBE";
         break;
 
       case "snyk":
         toolResult = readJsonFileSync(
-          `${process.cwd()}\\formattedResults\\formattedResult-snyk.json`
+          `${process.cwd()}/formattedResults/formattedResult-snyk.json`
         );
         this.toolOrLogicName = "SNYK";
         break;
@@ -373,7 +373,7 @@ export default class Combiner {
 
     for (let i = 0; i < fileNames.length; i++) {
       const toolResult = readJsonFileSync(
-        `${process.cwd()}\\formattedResults\\${fileNames[i]}`
+        `${process.cwd()}/formattedResults/${fileNames[i]}`
       );
       if (toolResult) toolResults.push(toolResult);
     }
@@ -479,7 +479,7 @@ export default class Combiner {
 
     for (let i = 0; i < fileNames.length; i++) {
       const toolResult = readJsonFileSync(
-        `${process.cwd()}\\formattedResults\\${fileNames[i]}`
+        `${process.cwd()}/formattedResults/${fileNames[i]}`
       );
       if (toolResult) {
         for (const result of toolResult) {

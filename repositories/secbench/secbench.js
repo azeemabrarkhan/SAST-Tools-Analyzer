@@ -13,15 +13,15 @@ export default class Secbench {
 
   scrape = async (partNumber) => {
     const data = await csvToArray(
-      `${this.currentDir}\\repositories\\secbench\\secbench${partNumber}.csv`
+      `${this.currentDir}/repositories/secbench/secbench${partNumber}.csv`
     );
     for (const commit of data) {
       this.vulnerablityCount++;
 
       const baseUrl = `https://api.github.com/repos/${commit.owner}/${commit.project}`;
 
-      const vulPath = `${this.currentDir}\\datasets\\secbench\\vul\\${commit.language}\\${commit["cwe_id"]}\\${commit.owner}\\${commit.project}\\${this.vulnerablityCount}\\${commit["sha-p"]}`;
-      const fixPath = `${this.currentDir}\\datasets\\secbench\\fix\\${commit.language}\\${commit["cwe_id"]}\\${commit.owner}\\${commit.project}\\${this.vulnerablityCount}\\${commit.sha}`;
+      const vulPath = `${this.currentDir}/datasets/secbench/vul/${commit.language}/${commit["cwe_id"]}/${commit.owner}/${commit.project}/${this.vulnerablityCount}/${commit["sha-p"]}`;
+      const fixPath = `${this.currentDir}/datasets/secbench/fix/${commit.language}/${commit["cwe_id"]}/${commit.owner}/${commit.project}/${this.vulnerablityCount}/${commit.sha}`;
 
       await this.processSecbenchCommit(
         baseUrl,
@@ -58,7 +58,7 @@ export default class Secbench {
             fetchFile(vulFileUrl)
               .then((text) =>
                 writeFileAsync(
-                  `${vulPath}\\${splitFileName[splitFileName.length - 1]}`,
+                  `${vulPath}/${splitFileName[splitFileName.length - 1]}`,
                   text
                 )
               )
@@ -72,7 +72,7 @@ export default class Secbench {
             fetchFile(fixFileUrl)
               .then((text) => {
                 writeFileAsync(
-                  `${fixPath}\\${splitFileName[splitFileName.length - 1]}`,
+                  `${fixPath}/${splitFileName[splitFileName.length - 1]}`,
                   text
                 );
                 if (fileNames.indexOf(fileName) === fileNames.length - 1) {

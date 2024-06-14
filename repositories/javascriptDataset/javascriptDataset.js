@@ -36,10 +36,10 @@ export default class JavascriptDataset {
 
   constructor() {
     this.currentDir = process.cwd();
-    this.datasetFilePath = `repositories\\javascriptDataset\\dataset.csv`;
-    this.metaDataFilePath = `${this.currentDir}\\repositories\\javascriptDataset\\metaData.json`;
-    this.statsFilePath = `${this.currentDir}\\datasets\\javascriptDataset\\stats.txt`;
-    this.aiChatHistoryPath = `${this.currentDir}\\datasets\\javascriptDataset\\aiChatHistory.txt`;
+    this.datasetFilePath = `repositories/javascriptDataset/dataset.csv`;
+    this.metaDataFilePath = `${this.currentDir}/repositories/javascriptDataset/metaData.json`;
+    this.statsFilePath = `${this.currentDir}/datasets/javascriptDataset/stats.txt`;
+    this.aiChatHistoryPath = `${this.currentDir}/datasets/javascriptDataset/aiChatHistory.txt`;
     this.downloadedRecords = [];
     this.shouldAnalyzeRecordsWithAI = false;
     this.generativeAI = new GenerativeAI();
@@ -128,20 +128,22 @@ export default class JavascriptDataset {
   };
 
   getNumberOfInnerMostVulnerableFunctions = () => {
-    return this.downloadedRecords
-      .map((r) => r.innerMostVulnerableFunctions)
-      .flat().length;
+    return this.downloadedRecords.map((r) => r.functionsInVul).flat().length;
   };
 
   async processRecord(record) {
-    makeDir(record.dirPath);
-    makeDir(record.cleanDirPath);
+    const fullVulPath = `${this.currentDir}/datasets/javascriptDataset/${record.vulPath}`;
+    const fullFixPath = `${this.currentDir}/datasets/combinedDataset/${record.fixPath}`;
+
+    makeDir(fullVulPath);
+    makeDir(fullFixPath);
+
     let isSuccessful = true;
 
     return fetchFile(record.fetchLink)
       .then((sourceCode) => {
         if (this.shouldAnalyzeRecordsWithAI) {
-          const prompts = record.innerMostVulnerableFunctions.map((func) =>
+          const prompts = record.functionsInVul.map((func) =>
             removeTabsAndNewLines(
               getLinesFromString(sourceCode, func.startLine, func.endLine)
             )
@@ -158,19 +160,13 @@ export default class JavascriptDataset {
         if (this.shouldAnalyzeRecordsWithAI && results.aiResponses) {
           record.aiResponses = results.aiResponses;
         }
+        writeFileAsync(`${fullVulPath}/${record.fileName}`, results.sourceCode);
         writeFileAsync(
-          `${record.dirPath}\\${record.fileName}`,
-          results.sourceCode
+          `${fullFixPath}/${record.fileName}`,
+          removeLinesFromString(results.sourceCode, record.functionsInVul)
         );
         writeFileAsync(
-          `${record.cleanDirPath}\\${record.fileName}`,
-          removeLinesFromString(
-            results.sourceCode,
-            record.innerMostVulnerableFunctions
-          )
-        );
-        writeFileAsync(
-          `${record.dirPath}\\record.txt`,
+          `${fullVulPath}/record.txt`,
           JSON.stringify(record, null, 2)
         );
         this.downloadedRecords.push(record);
@@ -181,13 +177,15 @@ export default class JavascriptDataset {
           `ERROR, while fetching file from the url: ${record.fetchLink} - error trace: ${err}`
         );
       })
-      .finally(() =>
+      .finally(() => {
+        record.vulPath = `${record.vulPath}/${record.fileName}`;
+        record.fixPath = `${record.fixPath}/${record.fileName}`;
         console.log(
           `${isSuccessful ? "SUCCESS" : "FAILED"} - download ${
             record.fileName
           } from ${record.fetchLink}`
-        )
-      );
+        );
+      });
   }
 
   getFormattedDataset = (dataset) => {
@@ -217,13 +215,10 @@ export default class JavascriptDataset {
       )}/contents/${getFullFilename(repoPath)}?ref=${getCommitId(repoPath)}`;
     };
 
-    const getDirPath = (repoPath, index, isCleanFilePath) => {
-      return `${this.currentDir}\\datasets\\${
-        isCleanFilePath ? "combinedDataset\\clean" : "javascriptDataset"
-      }\\${getOwnerAndProject(repoPath).replace(
-        "/",
-        "\\"
-      )}\\${index}\\${getCommitId(repoPath)}`;
+    const getPath = (repoPath, index, isFixFilePath) => {
+      return `${isFixFilePath ? "clean/" : ""}${getOwnerAndProject(
+        repoPath
+      )}/${index}/${getCommitId(repoPath)}`;
     };
 
     const formattedDataset = [
@@ -244,20 +239,20 @@ export default class JavascriptDataset {
       const functionsInHierarchicalStructure =
         getFunctionsInHierarchicalStructure(functions.map((f) => ({ ...f })));
 
-      const innerMostVulnerableFunctions = getInnerMostVulnerableFunctions(
+      const functionsInVul = getInnerMostVulnerableFunctions(
         functionsInHierarchicalStructure
       );
 
       return {
         repoPath,
         fetchLink: getFetchableFileLink(repoPath),
-        dirPath: getDirPath(repoPath, index, false),
-        cleanDirPath: getDirPath(repoPath, index, true),
+        vulPath: getPath(repoPath, index, false),
+        fixPath: getPath(repoPath, index, true),
         fullFileName: getFullFilename(repoPath),
         fileName: getFilename(repoPath),
         functions,
         functionsInHierarchicalStructure,
-        innerMostVulnerableFunctions,
+        functionsInVul,
       };
     });
   };

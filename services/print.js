@@ -16,7 +16,7 @@ export function printRecursiveObject(obj, indent = 0) {
 
 // print CWEs
 // const meta = readJsonFileSync(
-//   `${process.cwd()}\\repositories\\ossf\\metaData.json`
+//   `${process.cwd()}/repositories/ossf/metaData.json`
 // );
 // console.log(meta.length);
 // console.log(meta.filter((m) => m.functionsInVul.length === 0).length);
