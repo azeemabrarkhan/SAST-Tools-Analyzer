@@ -45,6 +45,18 @@ export default class Combiner {
     console.log(this.getActiveTools());
   };
 
+  isToolActive = (toolName) => {
+    const tool = this.availableTools.find((tool) => tool.name === toolName);
+    return tool && tool.isActive;
+  };
+
+  activateAllTools = () => {
+    this.availableTools = this.availableTools.map((tool) => ({
+      ...tool,
+      isActive: true,
+    }));
+  };
+
   switchTool = (toolName) => {
     const index = this.availableTools.findIndex(
       (tool) => tool.name === toolName
@@ -334,6 +346,11 @@ export default class Combiner {
   };
 
   evaluateIndividualTool = (toolName) => {
+    if (!this.isToolActive(toolName)) {
+      console.log(`The selected tool '${toolName}' is currently disabled\n`);
+      return;
+    }
+
     let toolResult;
 
     switch (toolName) {
@@ -373,6 +390,9 @@ export default class Combiner {
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
     if (fileNames.length === 1) {
+      console.log(
+        "Only one tool is currently active - can not combine results with AND logic\n"
+      );
       return;
     }
     this.toolOrLogicName = "AND LOGIC";
@@ -483,6 +503,9 @@ export default class Combiner {
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
     if (fileNames.length === 1) {
+      console.log(
+        "Only one tool is currently active - can not combine results with OR logic\n"
+      );
       return;
     }
     this.toolOrLogicName = "OR LOGIC";
