@@ -369,10 +369,13 @@ export default class Combiner {
   };
 
   withAndLogic = () => {
-    this.toolOrLogicName = "AND LOGIC";
     const fileNames = this.getActiveTools().map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
+    if (fileNames.length === 1) {
+      return;
+    }
+    this.toolOrLogicName = "AND LOGIC";
     let toolResults = [];
     const results = [];
 
@@ -476,10 +479,13 @@ export default class Combiner {
   };
 
   withOrLogic = () => {
-    this.toolOrLogicName = "OR LOGIC";
     const fileNames = this.getActiveTools().map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
+    if (fileNames.length === 1) {
+      return;
+    }
+    this.toolOrLogicName = "OR LOGIC";
     let results = [];
 
     for (let i = 0; i < fileNames.length; i++) {
