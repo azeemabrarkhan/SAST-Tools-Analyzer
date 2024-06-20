@@ -258,6 +258,10 @@ export default class CommandPrompt {
               await new Snyk().convertJsonToFormattedResult();
               break;
             case "4":
+              console.clear();
+              console.log(
+                "Converted sonarqube, codeql and snyk results to their respective formatted output"
+              );
               await new Sonarqube().convertTypeToFormattedResult(
                 "VULNERABILITY"
               );
