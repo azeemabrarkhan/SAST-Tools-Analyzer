@@ -1,0 +1,385 @@
+import readline from "readline";
+import Secbench from "../repositories/secbench/secbench.js";
+import Ossf from "../repositories/ossf/ossf.js";
+import JavascriptDataset from "../repositories/javascriptDataset/javascriptDataset.js";
+import Combiner from "../combiner.js";
+import { Sonarqube } from "../tools/sonarqube.js";
+import { CodeQl } from "../tools/codeql.js";
+import { Snyk } from "../tools/snyk.js";
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+export default class CommandPrompt {
+  breadcrumbs = ["Main menu"];
+  combiner = new Combiner();
+
+  start = async () => {
+    let shouldContinue = true;
+
+    const runAllCombinations = () => {
+      this.combiner.activateAllTools();
+
+      this.combiner.evaluateIndividualTool(process.env.TOOL1_NAME);
+      this.combiner.evaluateIndividualTool(process.env.TOOL2_NAME);
+      this.combiner.evaluateIndividualTool(process.env.TOOL3_NAME);
+
+      this.combiner.withOrLogic();
+      this.combiner.withAndLogic();
+
+      this.combiner.switchTool(process.env.TOOL1_NAME);
+      this.combiner.withOrLogic();
+      this.combiner.withAndLogic();
+
+      this.combiner.switchTool(process.env.TOOL2_NAME);
+      this.combiner.switchTool(process.env.TOOL1_NAME);
+      this.combiner.withOrLogic();
+      this.combiner.withAndLogic();
+
+      this.combiner.switchTool(process.env.TOOL3_NAME);
+      this.combiner.switchTool(process.env.TOOL2_NAME);
+      this.combiner.withOrLogic();
+      this.combiner.withAndLogic();
+
+      this.combiner.switchTool(process.env.TOOL3_NAME);
+    };
+
+    const runCombinerByToolOrLogic = (toolOrLogicFunction) => {
+      this.combiner.analyzeOnFileLevel();
+      toolOrLogicFunction();
+
+      this.combiner.analyzeOnFunctionLevel();
+      toolOrLogicFunction();
+
+      this.combiner.analyzeOnLineLevel();
+      toolOrLogicFunction();
+    };
+
+    const runCombinerByGranularityLevel = () => {
+      this.combiner.evaluateIndividualTool(process.env.TOOL1_NAME);
+      this.combiner.evaluateIndividualTool(process.env.TOOL2_NAME);
+      this.combiner.evaluateIndividualTool(process.env.TOOL3_NAME);
+
+      this.combiner.withOrLogic();
+      this.combiner.withAndLogic();
+    };
+
+    const getFullMenu = () => {
+      return {
+        ["Main menu"]: {
+          title: "Main menu",
+          options: `
+1- Fetch options
+2- Convert to formatted outputs
+3- Combine formatted results
+4- Back
+5- End Program\n
+`,
+        },
+        ["Fetch options"]: {
+          title: "Fetch options",
+          options: `
+1- Fetch Secbench dataset Part1
+2- Fetch Secbench dataset Part2
+3- Fetch Ossf dataset
+4- Fetch Javascript dataset with generative AI
+5- Fetch Javascript dataset w/o generative AI
+6- Fetch both Ossf and Javascript datasets w/o generative AI
+7- Back
+8- End Program\n
+`,
+        },
+        ["Convert to formatted outputs"]: {
+          title: "Convert to formatted outputs",
+          options: `
+1- Convert ${process.env.TOOL1_NAME} results (server should be active)
+2- Convert ${process.env.TOOL2_NAME} results
+3- Convert ${process.env.TOOL3_NAME} results
+4- Convert all results
+5- Back
+6- End Program\n
+`,
+        },
+        ["Combine formatted results"]: {
+          title: "Combine formatted results",
+          options: `
+1- Run all (activate disabled tools automatically)
+2- By tool or logic (only process with currently active tools)
+3- By granularity-level (only process with currently active tools)
+4- Switch tool
+5- Back
+6- End Program\n
+`,
+        },
+        ["By tool or logic"]: {
+          title: "By tool or logic",
+          options: `
+1- ${process.env.TOOL1_NAME}
+2- ${process.env.TOOL2_NAME}
+3- ${process.env.TOOL3_NAME}
+4- AND logic
+5- OR logic
+6- Back
+7- End Program\n
+`,
+        },
+        ["By granularity-level"]: {
+          title: "By granularity-level",
+          options: `
+1- File level
+2- Function level
+3- Line level
+4- Back
+5- End Program\n
+`,
+        },
+        ["Switch tool"]: {
+          title: "Switch tool",
+          options:
+            "\n" +
+            this.combiner.availableTools
+              .map(
+                (tool, index) =>
+                  `${index + 1}- ${tool.name}: ${
+                    tool.isActive ? "Enabled" : "Disabled"
+                  }\n`
+              )
+              .join("") +
+            "4- Back\n5- End Program\n",
+        },
+      };
+    };
+
+    const getUserInput = async (question) => {
+      return new Promise((resolve) =>
+        rl.question(question, (answer) => resolve(answer))
+      );
+    };
+
+    const getCurrentMenu = (fullMenu) => {
+      return fullMenu[this.breadcrumbs[this.breadcrumbs.length - 1]];
+    };
+
+    const goBack = () => {
+      console.clear();
+      if (this.breadcrumbs.length === 1) {
+        console.log("\nCan not go back");
+        return;
+      }
+
+      this.breadcrumbs.pop();
+    };
+
+    const end = () => {
+      shouldContinue = false;
+      rl.close();
+    };
+
+    const printBreadcrumbs = () => {
+      console.log(`\n${this.breadcrumbs.join(" --> ")}`);
+    };
+
+    while (shouldContinue) {
+      const fullMenu = getFullMenu();
+      const currentMenu = getCurrentMenu(fullMenu);
+      printBreadcrumbs();
+      const optionIndex = await getUserInput(currentMenu.options);
+      switch (currentMenu.title) {
+        case "Main menu":
+          switch (optionIndex) {
+            case "1":
+              console.clear();
+              this.breadcrumbs.push("Fetch options");
+              break;
+            case "2":
+              console.clear();
+              this.breadcrumbs.push("Convert to formatted outputs");
+              break;
+            case "3":
+              console.clear();
+              this.breadcrumbs.push("Combine formatted results");
+              break;
+            case "4":
+              goBack();
+              break;
+            case "5":
+              end();
+              break;
+          }
+          break;
+        case "Fetch options":
+          switch (optionIndex) {
+            case "1":
+            case "2":
+              const optionInt = parseInt(optionIndex);
+              if (typeof optionInt === "number")
+                await new Secbench().scrape(optionInt);
+              break;
+            case "3":
+              await new Ossf().scrape();
+              break;
+            case "4":
+              await new JavascriptDataset().scrape(true);
+              break;
+            case "5":
+              await new JavascriptDataset().scrape(false);
+              break;
+            case "6":
+              await new Ossf().scrape();
+              await new JavascriptDataset().scrape(false);
+              break;
+            case "7":
+              goBack();
+              break;
+            case "8":
+              end();
+              break;
+          }
+          break;
+        case "Convert to formatted outputs":
+          switch (optionIndex) {
+            case "1":
+              console.clear();
+              console.log("Converted sonarqube results to formatted output");
+              await new Sonarqube().convertTypeToFormattedResult(
+                "VULNERABILITY"
+              );
+              break;
+            case "2":
+              console.clear();
+              console.log("Converted codeql results to formatted output");
+              await new CodeQl().convertCsvToFormattedResult();
+              break;
+            case "3":
+              console.clear();
+              console.log("Converted snyk results to formatted output");
+              await new Snyk().convertJsonToFormattedResult();
+              break;
+            case "4":
+              await new Sonarqube().convertTypeToFormattedResult(
+                "VULNERABILITY"
+              );
+              await new CodeQl().convertCsvToFormattedResult();
+              await new Snyk().convertJsonToFormattedResult();
+              break;
+            case "5":
+              goBack();
+              break;
+            case "6":
+              end();
+              break;
+          }
+          break;
+        case "Combine formatted results":
+          switch (optionIndex) {
+            case "1":
+              this.combiner.analyzeOnFileLevel();
+              runAllCombinations();
+
+              this.combiner.analyzeOnFunctionLevel();
+              runAllCombinations();
+
+              this.combiner.analyzeOnLineLevel();
+              runAllCombinations();
+              break;
+            case "2":
+              console.clear();
+              this.breadcrumbs.push("By tool or logic");
+              break;
+            case "3":
+              console.clear();
+              this.breadcrumbs.push("By granularity-level");
+              break;
+            case "4":
+              console.clear();
+              this.breadcrumbs.push("Switch tool");
+              break;
+            case "5":
+              goBack();
+              break;
+            case "6":
+              end();
+              break;
+          }
+          break;
+        case "By tool or logic":
+          switch (optionIndex) {
+            case "1":
+              runCombinerByToolOrLogic(() =>
+                this.combiner.evaluateIndividualTool(process.env.TOOL1_NAME)
+              );
+              break;
+            case "2":
+              runCombinerByToolOrLogic(() =>
+                this.combiner.evaluateIndividualTool(process.env.TOOL2_NAME)
+              );
+              break;
+            case "3":
+              runCombinerByToolOrLogic(() =>
+                this.combiner.evaluateIndividualTool(process.env.TOOL3_NAME)
+              );
+              break;
+            case "4":
+              runCombinerByToolOrLogic(() => this.combiner.withAndLogic());
+              break;
+            case "5":
+              runCombinerByToolOrLogic(() => this.combiner.withOrLogic());
+              break;
+            case "6":
+              goBack();
+              break;
+            case "7":
+              end();
+              break;
+          }
+          break;
+        case "By granularity-level":
+          switch (optionIndex) {
+            case "1":
+              this.combiner.analyzeOnFileLevel();
+              runCombinerByGranularityLevel();
+              break;
+            case "2":
+              this.combiner.analyzeOnFunctionLevel();
+              runCombinerByGranularityLevel();
+              break;
+            case "3":
+              this.combiner.analyzeOnLineLevel();
+              runCombinerByGranularityLevel();
+              break;
+            case "4":
+              goBack();
+              break;
+            case "5":
+              end();
+              break;
+          }
+          break;
+        case "Switch tool":
+          switch (optionIndex) {
+            case "1":
+              console.clear();
+              this.combiner.switchTool(process.env.TOOL1_NAME);
+              break;
+            case "2":
+              console.clear();
+              this.combiner.switchTool(process.env.TOOL2_NAME);
+              break;
+            case "3":
+              console.clear();
+              this.combiner.switchTool(process.env.TOOL3_NAME);
+              break;
+            case "4":
+              goBack();
+              break;
+            case "5":
+              end();
+              break;
+          }
+          break;
+      }
+    }
+  };
+}
