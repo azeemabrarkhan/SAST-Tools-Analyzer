@@ -621,5 +621,71 @@ export default class Combiner {
     );
   };
 
-  withMajorityLogic = () => {};
+  runCombinerByTool = (toolName) => {
+    if (!this.isToolActive(toolName)) {
+      console.log(`The selected tool '${toolName}' is currently disabled\n`);
+      return;
+    }
+
+    this.analyzeOnFileLevel();
+    this.evaluateIndividualTool(toolName);
+
+    this.analyzeOnFunctionLevel();
+    this.evaluateIndividualTool(toolName);
+
+    this.analyzeOnLineLevel();
+    this.evaluateIndividualTool(toolName);
+  };
+
+  runCombinerByLogic = (logicFunction) => {
+    if (this.getActiveTools().length === 1) {
+      console.log(
+        "Only one tool is currently active - can not combine results\n"
+      );
+      return;
+    }
+
+    this.analyzeOnFileLevel();
+    logicFunction();
+
+    this.analyzeOnFunctionLevel();
+    logicFunction();
+
+    this.analyzeOnLineLevel();
+    logicFunction();
+  };
+
+  runCombinerByGranularityLevel = () => {
+    this.evaluateIndividualTool(process.env.TOOL1_NAME);
+    this.evaluateIndividualTool(process.env.TOOL2_NAME);
+    this.evaluateIndividualTool(process.env.TOOL3_NAME);
+
+    this.withOrLogic();
+    this.withAndLogic();
+  };
+
+  runAllCombinations = () => {
+    this.evaluateIndividualTool(process.env.TOOL1_NAME);
+    this.evaluateIndividualTool(process.env.TOOL2_NAME);
+    this.evaluateIndividualTool(process.env.TOOL3_NAME);
+
+    this.withOrLogic();
+    this.withAndLogic();
+
+    this.switchTool(process.env.TOOL1_NAME);
+    this.withOrLogic();
+    this.withAndLogic();
+
+    this.switchTool(process.env.TOOL2_NAME);
+    this.switchTool(process.env.TOOL1_NAME);
+    this.withOrLogic();
+    this.withAndLogic();
+
+    this.switchTool(process.env.TOOL3_NAME);
+    this.switchTool(process.env.TOOL2_NAME);
+    this.withOrLogic();
+    this.withAndLogic();
+
+    this.switchTool(process.env.TOOL3_NAME);
+  };
 }

@@ -19,53 +19,6 @@ export default class CommandPrompt {
   start = async () => {
     let shouldContinue = true;
 
-    const runAllCombinations = () => {
-      this.combiner.activateAllTools();
-
-      this.combiner.evaluateIndividualTool(process.env.TOOL1_NAME);
-      this.combiner.evaluateIndividualTool(process.env.TOOL2_NAME);
-      this.combiner.evaluateIndividualTool(process.env.TOOL3_NAME);
-
-      this.combiner.withOrLogic();
-      this.combiner.withAndLogic();
-
-      this.combiner.switchTool(process.env.TOOL1_NAME);
-      this.combiner.withOrLogic();
-      this.combiner.withAndLogic();
-
-      this.combiner.switchTool(process.env.TOOL2_NAME);
-      this.combiner.switchTool(process.env.TOOL1_NAME);
-      this.combiner.withOrLogic();
-      this.combiner.withAndLogic();
-
-      this.combiner.switchTool(process.env.TOOL3_NAME);
-      this.combiner.switchTool(process.env.TOOL2_NAME);
-      this.combiner.withOrLogic();
-      this.combiner.withAndLogic();
-
-      this.combiner.switchTool(process.env.TOOL3_NAME);
-    };
-
-    const runCombinerByToolOrLogic = (toolOrLogicFunction) => {
-      this.combiner.analyzeOnFileLevel();
-      toolOrLogicFunction();
-
-      this.combiner.analyzeOnFunctionLevel();
-      toolOrLogicFunction();
-
-      this.combiner.analyzeOnLineLevel();
-      toolOrLogicFunction();
-    };
-
-    const runCombinerByGranularityLevel = () => {
-      this.combiner.evaluateIndividualTool(process.env.TOOL1_NAME);
-      this.combiner.evaluateIndividualTool(process.env.TOOL2_NAME);
-      this.combiner.evaluateIndividualTool(process.env.TOOL3_NAME);
-
-      this.combiner.withOrLogic();
-      this.combiner.withAndLogic();
-    };
-
     const getFullMenu = () => {
       return {
         ["Main menu"]: {
@@ -279,14 +232,16 @@ export default class CommandPrompt {
         case "Combine formatted results":
           switch (optionIndex) {
             case "1":
+              this.combiner.activateAllTools();
+
               this.combiner.analyzeOnFileLevel();
-              runAllCombinations();
+              this.combiner.runAllCombinations();
 
               this.combiner.analyzeOnFunctionLevel();
-              runAllCombinations();
+              this.combiner.runAllCombinations();
 
               this.combiner.analyzeOnLineLevel();
-              runAllCombinations();
+              this.combiner.runAllCombinations();
               break;
             case "2":
               console.clear();
@@ -311,25 +266,23 @@ export default class CommandPrompt {
         case "By tool or logic":
           switch (optionIndex) {
             case "1":
-              runCombinerByToolOrLogic(() =>
-                this.combiner.evaluateIndividualTool(process.env.TOOL1_NAME)
-              );
+              this.combiner.runCombinerByTool(process.env.TOOL1_NAME);
               break;
             case "2":
-              runCombinerByToolOrLogic(() =>
-                this.combiner.evaluateIndividualTool(process.env.TOOL2_NAME)
-              );
+              this.combiner.runCombinerByTool(process.env.TOOL2_NAME);
               break;
             case "3":
-              runCombinerByToolOrLogic(() =>
-                this.combiner.evaluateIndividualTool(process.env.TOOL3_NAME)
-              );
+              this.combiner.runCombinerByTool(process.env.TOOL3_NAME);
               break;
             case "4":
-              runCombinerByToolOrLogic(() => this.combiner.withAndLogic());
+              this.combiner.runCombinerByLogic(() =>
+                this.combiner.withAndLogic()
+              );
               break;
             case "5":
-              runCombinerByToolOrLogic(() => this.combiner.withOrLogic());
+              this.combiner.runCombinerByLogic(() =>
+                this.combiner.withOrLogic()
+              );
               break;
             case "6":
               goBack();
@@ -343,15 +296,15 @@ export default class CommandPrompt {
           switch (optionIndex) {
             case "1":
               this.combiner.analyzeOnFileLevel();
-              runCombinerByGranularityLevel();
+              this.combiner.runCombinerByGranularityLevel();
               break;
             case "2":
               this.combiner.analyzeOnFunctionLevel();
-              runCombinerByGranularityLevel();
+              this.combiner.runCombinerByGranularityLevel();
               break;
             case "3":
               this.combiner.analyzeOnLineLevel();
-              runCombinerByGranularityLevel();
+              this.combiner.runCombinerByGranularityLevel();
               break;
             case "4":
               goBack();
