@@ -1,5 +1,3 @@
-import { readJsonFileSync } from "./services/file.js";
-
 export default class Analyzer {
   evaluateResult = (
     found,
