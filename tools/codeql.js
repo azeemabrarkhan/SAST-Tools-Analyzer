@@ -41,6 +41,7 @@ export class CodeQl {
         effort: "",
         tags: [],
         quickFixAvailable: "no information",
+        toolName: "codeql",
         properties: {},
         similarResults: [],
       };

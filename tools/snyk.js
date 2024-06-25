@@ -37,6 +37,7 @@ export class Snyk {
           effort: "",
           tags: [],
           quickFixAvailable: result.properties.isAutofixable ? "yes" : "no",
+          toolName: "snyk",
           properties: result.properties,
           similarResults: [],
         };

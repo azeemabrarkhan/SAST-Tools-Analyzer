@@ -101,6 +101,7 @@ export class Sonarqube {
         effort: issue.effort,
         tags: issue.tags,
         quickFixAvailable: issue.quickFixAvailable ? "yes" : "no",
+        toolName: "sonarqube",
         properties: {},
         similarResults: [],
       };
