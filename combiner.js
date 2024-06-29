@@ -558,7 +558,8 @@ export default class Combiner {
               indexOfAlreadyFound = results.findIndex(
                 (r) =>
                   r.vulPath === result.vulPath &&
-                  r.lineNumber === result.lineNumber
+                  r.lineNumber === result.lineNumber &&
+                  r.toolName !== result.toolName
               );
               if (indexOfAlreadyFound >= 0) {
                 // todo
@@ -591,9 +592,9 @@ export default class Combiner {
     this.setNotRecognizedPatches(results);
     this.saveResultFile();
     this.analyzer.evaluateResult(
-      this.found,
-      this.notFound,
-      this.notRecognizedPatches,
+      this.found.length,
+      this.notFound.length,
+      this.notRecognizedPatches.length,
       this.getTotalVulCount()
     );
   };

@@ -8,8 +8,8 @@ export default class Analyzer {
     // found = Hits that are included in the known vul set
     // notFound = Hits that are not included in the known vul set
 
-    const tp = found.length;
-    const fp = notFound.length;
+    const tp = found;
+    const fp = notFound;
     const fn = totalVulnerabilities - tp;
 
     const precision = tp / (tp + fp);
@@ -21,7 +21,7 @@ export default class Analyzer {
     console.log("True Positive ", tp);
     console.log("False Positive ", fp);
     console.log("False Negative ", fn);
-    console.log("Not recognized patches ", notRecognizedPatches.length);
+    console.log("Not recognized patches ", notRecognizedPatches);
     console.log("Precision ", precision);
     console.log("Recall ", recall);
     console.log("F1 Score  ", f1);
