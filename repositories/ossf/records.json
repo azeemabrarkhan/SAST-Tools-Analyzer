@@ -882,7 +882,7 @@
     "CWEs": ["CWE-730", "CWE-400"]
   },
   {
-    "CVE": "CVE-2017-18352",
+    "CVE": "CVE-2017-18352-18353",
     "state": "PUBLISHED",
     "repository": "https://github.com/GoogleChrome/rendertron.git",
     "prePatch": {
@@ -894,21 +894,7 @@
             "line": 106
           },
           "explanation": "Reflected cross-site scripting"
-        }
-      ]
-    },
-    "postPatch": {
-      "commit": "324ac99732c943d7b16aead2fceaa8b31a458e"
-    },
-    "CWEs": ["CWE-079", "CWE-116"]
-  },
-  {
-    "CVE": "CVE-2017-18353",
-    "state": "PUBLISHED",
-    "repository": "https://github.com/GoogleChrome/rendertron.git",
-    "prePatch": {
-      "commit": "16ade3208c80c3de8f8e36a05ad8242af1eeb7f4",
-      "weaknesses": [
+        },
         {
           "location": {
             "file": "src/main.js",
@@ -919,12 +905,12 @@
       ]
     },
     "postPatch": {
-      "commit": "324ac99732c943d7b16aead2fceaa8b31a458eaa"
+      "commit": "324ac99732c943d7b16aead2fceaa8b31a458e"
     },
-    "CWEs": ["CWE-079", "CWE-116"]
+    "CWEs": ["CWE-079", "CWE-116", "CWE-079", "CWE-116"]
   },
   {
-    "CVE": "CVE-2017-18354",
+    "CVE": "CVE-2017-18354-18355",
     "state": "PUBLISHED",
     "repository": "https://github.com/GoogleChrome/rendertron.git",
     "prePatch": {
@@ -936,21 +922,7 @@
             "line": 75
           },
           "explanation": "Uncontrolled data used in network request"
-        }
-      ]
-    },
-    "postPatch": {
-      "commit": "324ac99732c943d7b16aead2fceaa8b31a458eaa"
-    },
-    "CWEs": ["CWE-918"]
-  },
-  {
-    "CVE": "CVE-2017-18355",
-    "state": "PUBLISHED",
-    "repository": "https://github.com/GoogleChrome/rendertron.git",
-    "prePatch": {
-      "commit": "16ade3208c80c3de8f8e36a05ad8242af1eeb7f4",
-      "weaknesses": [
+        },
         {
           "location": {
             "file": "src/renderer.js",
@@ -961,9 +933,9 @@
       ]
     },
     "postPatch": {
-      "commit": "324ac99732c943d7b16aead2fceaa8b31a458eaa"
+      "commit": "324ac99732c943d7b16aead2fceaa8b31a458e"
     },
-    "CWEs": ["CWE-200"]
+    "CWEs": ["CWE-918", "CWE-200"]
   },
   {
     "CVE": "CVE-2017-18635",
@@ -1260,27 +1232,6 @@
     "CWEs": ["CWE-079", "CWE-116"]
   },
   {
-    "CVE": "CVE-2018-14042",
-    "state": "PUBLISHED",
-    "repository": "https://github.com/twbs/bootstrap.git",
-    "prePatch": {
-      "commit": "13bf8aeae3db71e28af69782328c22215795c169",
-      "weaknesses": [
-        {
-          "location": {
-            "file": "js/tooltip.js",
-            "line": 207
-          },
-          "explanation": "Unsafe jQuery plugin"
-        }
-      ]
-    },
-    "postPatch": {
-      "commit": "2a5ba23ce8f041f3548317acc992ed8a736b609d"
-    },
-    "CWEs": ["CWE-079", "CWE-116"]
-  },
-  {
     "CVE": "CVE-2018-14380",
     "state": "PUBLISHED",
     "repository": "https://github.com/Graylog2/graylog2-server.git",
@@ -1407,12 +1358,20 @@
     "CWEs": ["CWE-022", "CWE-023", "CWE-036", "CWE-073", "CWE-099"]
   },
   {
-    "CVE": "CVE-2018-16479",
+    "CVE": "CVE-2018-16479-CVE-2019-5423",
     "state": "PUBLISHED",
     "repository": "https://github.com/prahladyeri/http-live-simulator.git",
     "prePatch": {
       "commit": "8e85a1be562248d0d616c0e5092a3d71bbf5fe5f",
       "weaknesses": [
+        {
+          "location": {
+            "file": "bin/http-live",
+            "line": 72,
+            "implicitExtension": "js"
+          },
+          "explanation": "Incomplete string escaping or encoding"
+        },
         {
           "location": {
             "file": "bin/http-live",
@@ -1426,10 +1385,18 @@
     "postPatch": {
       "commit": "354644525f1626c5921abac10913c0d47f1f1433"
     },
-    "CWEs": ["CWE-022", "CWE-023", "CWE-036", "CWE-073", "CWE-099"]
+    "CWEs": [
+      "CWE-116",
+      "CWE-020",
+      "CWE-022",
+      "CWE-023",
+      "CWE-036",
+      "CWE-073",
+      "CWE-099"
+    ]
   },
   {
-    "CVE": "CVE-2018-16480",
+    "CVE": "CVE-2018-16480-3747",
     "state": "PUBLISHED",
     "repository": "https://github.com/tnantoka/public.git",
     "prePatch": {
@@ -1661,7 +1628,7 @@
     "CWEs": ["CWE-730", "CWE-400"]
   },
   {
-    "CVE": "CVE-2018-20676",
+    "CVE": "CVE-2018-20676-14042",
     "state": "PUBLISHED",
     "repository": "https://github.com/twbs/bootstrap.git",
     "prePatch": {
@@ -1671,6 +1638,13 @@
           "location": {
             "file": "js/tooltip.js",
             "line": 54
+          },
+          "explanation": "Unsafe jQuery plugin"
+        },
+        {
+          "location": {
+            "file": "js/tooltip.js",
+            "line": 207
           },
           "explanation": "Unsafe jQuery plugin"
         }
@@ -2171,28 +2145,6 @@
       "commit": "5cc59cd8aa13ca8d16bb41da8affdfef370ad4fd"
     },
     "CWEs": ["CWE-078", "CWE-088"]
-  },
-  {
-    "CVE": "CVE-2018-3747",
-    "state": "PUBLISHED",
-    "repository": "https://github.com/tnantoka/public.git",
-    "prePatch": {
-      "commit": "6d152eb12b368df70c789aba84d27d01b854ee47",
-      "weaknesses": [
-        {
-          "location": {
-            "file": "bin/public",
-            "line": 111,
-            "implicitExtension": "js"
-          },
-          "explanation": "Stored cross-site scripting"
-        }
-      ]
-    },
-    "postPatch": {
-      "commit": "a754943e2b7348e366d4f2a5319cb12fa873a725"
-    },
-    "CWEs": ["CWE-079", "CWE-116"]
   },
   {
     "CVE": "CVE-2018-3750",
@@ -3579,28 +3531,6 @@
       "commit": "52d4e56243557411c558a55c6caffe8675335850"
     },
     "CWEs": ["CWE-078", "CWE-088"]
-  },
-  {
-    "CVE": "CVE-2019-5423",
-    "state": "PUBLISHED",
-    "repository": "https://github.com/prahladyeri/http-live-simulator.git",
-    "prePatch": {
-      "commit": "8e85a1be562248d0d616c0e5092a3d71bbf5fe5f",
-      "weaknesses": [
-        {
-          "location": {
-            "file": "bin/http-live",
-            "line": 72,
-            "implicitExtension": "js"
-          },
-          "explanation": "Incomplete string escaping or encoding"
-        }
-      ]
-    },
-    "postPatch": {
-      "commit": "354644525f1626c5921abac10913c0d47f1f1433"
-    },
-    "CWEs": ["CWE-116", "CWE-020"]
   },
   {
     "CVE": "CVE-2019-5444",
