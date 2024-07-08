@@ -5,6 +5,7 @@ import {
   writeFile,
   readFile,
 } from "./services/file.js";
+import { findAllIndexes } from "./utils/arryas.js";
 import { getLinesFromString } from "./utils/text.js";
 
 export default class Combiner {
@@ -559,11 +560,22 @@ export default class Combiner {
                 (r) =>
                   r.vulPath === result.vulPath &&
                   r.lineNumber === result.lineNumber &&
-                  r.toolName !== result.toolName
+                  (r.toolName !== result.toolName ||
+                    (r.name === result.name &&
+                      r.description === result.description))
               );
               if (indexOfAlreadyFound >= 0) {
                 // todo
-                results[indexOfAlreadyFound].similarResults.push(result);
+                const allIndexes = findAllIndexes(
+                  results,
+                  (r) =>
+                    r.vulPath === result.vulPath &&
+                    r.lineNumber === result.lineNumber &&
+                    r.toolName !== result.toolName
+                );
+                for (const index of allIndexes) {
+                  results[index].similarResults.push(result);
+                }
               }
               break;
           }
