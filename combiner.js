@@ -286,7 +286,7 @@ export default class Combiner {
                 (r) =>
                   r.vulPath === f.vulPath &&
                   this.getFunctionNameWithLineNumer(
-                    r.functionsInVul,
+                    r.functionsInFix,
                     resultSlice.lineNumber
                   ) ===
                     this.getFunctionNameWithLineNumer(
@@ -301,11 +301,11 @@ export default class Combiner {
                 (nr) =>
                   nr.vulPath === resultSlice.vulPath &&
                   this.getFunctionNameWithLineNumer(
-                    records[0].functionsInVul,
+                    records[0].functionsInFix,
                     nr.lineNumber
                   ) ===
                     this.getFunctionNameWithLineNumer(
-                      records[0].functionsInVul,
+                      records[0].functionsInFix,
                       resultSlice.lineNumber
                     )
               );
@@ -560,9 +560,7 @@ export default class Combiner {
                 (r) =>
                   r.vulPath === result.vulPath &&
                   r.lineNumber === result.lineNumber &&
-                  (r.toolName !== result.toolName ||
-                    (r.name === result.name &&
-                      r.description === result.description))
+                  r.toolName !== result.toolName
               );
               if (indexOfAlreadyFound >= 0) {
                 // todo
