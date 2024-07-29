@@ -320,23 +320,14 @@ export default class Combiner {
           break;
 
         case "line":
-          const fixedFunctionName = this.getFunctionNameWithLineNumer(
-            records[0].functionsInFix,
-            resultSlice.lineNumber
-          );
-          const fixedFunction = records[0].functionsInFix.find(
-            (func) => fixedFunctionName === func.name
-          );
-          const fixedCode = getLinesFromString(
-            readFile(`${process.env.FILES_BASE_PATH}/${resultSlice.vulPath}`),
-            fixedFunction?.startLine,
-            fixedFunction?.endLine
-          );
           if (
             this.found.find(
               (f) =>
-                fixedCode.includes(f.foundVulLine) &&
-                records.find((r) => r.vulPath === f.vulPath)
+                f.foundVulLine === resultSlice.foundVulLine &&
+                records.find(
+                  (r) =>
+                    r.vulPath === f.vulPath && r.lineNumber === f.lineNumber
+                )
             )
           ) {
             this.notRecognizedPatches.push(resultSlice);
