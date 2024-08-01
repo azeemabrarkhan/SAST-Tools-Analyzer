@@ -1,9 +1,14 @@
+import { findAllIndexes } from "./arryas.js";
+import { readJsonFileSync } from "./file.js";
+
 export const getCWEsCount = (dataSource) => {
   let data = dataSource;
   if (typeof dataSource === "string") data = readJsonFileSync(dataSource);
 
   const allCWEs = data.reduce((acc, r) => [...acc, ...r.CWEs], []);
-  const allCWEsWithoutDuplicates = [...new Set(allCWEs)];
+  const allCWEsWithoutDuplicates = [...new Set(allCWEs)].sort((a, b) =>
+    a.localeCompare(b)
+  );
 
   const cweRecords = {};
 
@@ -25,8 +30,7 @@ export const getDetectedCWEsPercentage = (
   const CWEsPercentage = {};
 
   for (const CWE in totalCWEsRecord) {
-    CWEsPercentage[CWE] = totalCWEsRecord[CWE] / detectedCWEsRecord[CWE] || 0;
-    console.log(CWEsPercentage[CWE]);
+    CWEsPercentage[CWE] = detectedCWEsRecord[CWE] / totalCWEsRecord[CWE] || 0;
   }
 
   return CWEsPercentage;
