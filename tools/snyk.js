@@ -40,6 +40,7 @@ export class Snyk {
           toolName: "snyk",
           properties: result.properties,
           similarResults: [],
+          CWEs: [],
         };
 
         formattedResult.foundVulLine = getSingleLineFromString(

@@ -44,6 +44,7 @@ export class CodeQl {
         toolName: "codeql",
         properties: {},
         similarResults: [],
+        CWEs: [],
       };
 
       formattedResult.foundVulLine = getSingleLineFromString(

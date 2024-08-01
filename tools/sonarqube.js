@@ -104,6 +104,7 @@ export class Sonarqube {
         toolName: "sonarqube",
         properties: {},
         similarResults: [],
+        CWEs: [],
       };
 
       formattedResult.foundVulLine = getSingleLineFromString(
