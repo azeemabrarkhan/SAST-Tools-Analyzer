@@ -6,7 +6,6 @@ import {
   readFile,
 } from "./services/file.js";
 import { findAllIndexes } from "./utils/arryas.js";
-import { getLinesFromString } from "./utils/text.js";
 
 export default class Combiner {
   found;
