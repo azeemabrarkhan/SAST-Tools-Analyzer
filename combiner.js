@@ -137,7 +137,6 @@ export default class Combiner {
             if (indexOfAlreadyFoundOrNotFound < 0) {
               this.found.push(resultSlice);
             } else {
-              // todo
               this.found[indexOfAlreadyFoundOrNotFound].similarResults.push(
                 resultSlice
               );
@@ -149,7 +148,6 @@ export default class Combiner {
             if (indexOfAlreadyFoundOrNotFound < 0) {
               this.notFound.push(resultSlice);
             } else {
-              // todo
               this.notFound[indexOfAlreadyFoundOrNotFound].similarResults.push(
                 resultSlice
               );
@@ -158,73 +156,57 @@ export default class Combiner {
           break;
 
         case "function":
-          if (actualVulsInTheCurrentFile.length === 0) {
-            indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
-              (r) => r.vulPath === resultSlice.vulPath
+          if (
+            actualVulsInTheCurrentFile.find(
+              (v) =>
+                this.getFunctionNameWithLineNumer(
+                  v.functionsInVul,
+                  v.lineNumber
+                ) ===
+                this.getFunctionNameWithLineNumer(
+                  v.functionsInVul,
+                  resultSlice.lineNumber
+                )
+            )
+          ) {
+            indexOfAlreadyFoundOrNotFound = this.found.findIndex(
+              (r) =>
+                r.vulPath === resultSlice.vulPath &&
+                this.getFunctionNameWithLineNumer(
+                  actualVulsInTheCurrentFile[0].functionsInVul,
+                  r.lineNumber
+                ) ===
+                  this.getFunctionNameWithLineNumer(
+                    actualVulsInTheCurrentFile[0].functionsInVul,
+                    resultSlice.lineNumber
+                  )
             );
             if (indexOfAlreadyFoundOrNotFound < 0) {
-              this.notFound.push(resultSlice);
+              this.found.push(resultSlice);
             } else {
-              // todo
-              this.notFound[indexOfAlreadyFoundOrNotFound].similarResults.push(
+              this.found[indexOfAlreadyFoundOrNotFound].similarResults.push(
                 resultSlice
               );
             }
           } else {
-            if (
-              actualVulsInTheCurrentFile.find(
-                (v) =>
+            indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
+              (r) =>
+                r.vulPath === resultSlice.vulPath &&
+                this.getFunctionNameWithLineNumer(
+                  actualVulsInTheCurrentFile[0].functionsInVul,
+                  r.lineNumber
+                ) ===
                   this.getFunctionNameWithLineNumer(
-                    v.functionsInVul,
-                    v.lineNumber
-                  ) ===
-                  this.getFunctionNameWithLineNumer(
-                    v.functionsInVul,
+                    actualVulsInTheCurrentFile[0].functionsInVul,
                     resultSlice.lineNumber
                   )
-              )
-            ) {
-              indexOfAlreadyFoundOrNotFound = this.found.findIndex(
-                (r) =>
-                  r.vulPath === resultSlice.vulPath &&
-                  this.getFunctionNameWithLineNumer(
-                    actualVulsInTheCurrentFile[0].functionsInVul,
-                    r.lineNumber
-                  ) ===
-                    this.getFunctionNameWithLineNumer(
-                      actualVulsInTheCurrentFile[0].functionsInVul,
-                      resultSlice.lineNumber
-                    )
-              );
-              if (indexOfAlreadyFoundOrNotFound < 0) {
-                this.found.push(resultSlice);
-              } else {
-                // todo
-                this.found[indexOfAlreadyFoundOrNotFound].similarResults.push(
-                  resultSlice
-                );
-              }
+            );
+            if (indexOfAlreadyFoundOrNotFound < 0) {
+              this.notFound.push(resultSlice);
             } else {
-              indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
-                (r) =>
-                  r.vulPath === resultSlice.vulPath &&
-                  this.getFunctionNameWithLineNumer(
-                    actualVulsInTheCurrentFile[0].functionsInVul,
-                    r.lineNumber
-                  ) ===
-                    this.getFunctionNameWithLineNumer(
-                      actualVulsInTheCurrentFile[0].functionsInVul,
-                      resultSlice.lineNumber
-                    )
+              this.notFound[indexOfAlreadyFoundOrNotFound].similarResults.push(
+                resultSlice
               );
-              if (indexOfAlreadyFoundOrNotFound < 0) {
-                this.notFound.push(resultSlice);
-              } else {
-                // todo
-                this.notFound[
-                  indexOfAlreadyFoundOrNotFound
-                ].similarResults.push(resultSlice);
-              }
             }
           }
           break;
@@ -236,9 +218,32 @@ export default class Combiner {
             );
           if (actualVulsInTheCurrentFileOnSameLine) {
             resultSlice.CWEs = actualVulsInTheCurrentFileOnSameLine.CWEs;
-            this.found.push(resultSlice);
+
+            indexOfAlreadyFoundOrNotFound = this.found.findIndex(
+              (r) =>
+                r.vulPath === resultSlice.vulPath &&
+                r.lineNumber === resultSlice.lineNumber
+            );
+            if (indexOfAlreadyFoundOrNotFound < 0) {
+              this.found.push(resultSlice);
+            } else {
+              this.found[indexOfAlreadyFoundOrNotFound].similarResults.push(
+                resultSlice
+              );
+            }
           } else {
-            this.notFound.push(resultSlice);
+            indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
+              (r) =>
+                r.vulPath === resultSlice.vulPath &&
+                r.lineNumber === resultSlice.lineNumber
+            );
+            if (indexOfAlreadyFoundOrNotFound < 0) {
+              this.notFound.push(resultSlice);
+            } else {
+              this.notFound[indexOfAlreadyFoundOrNotFound].similarResults.push(
+                resultSlice
+              );
+            }
           }
           break;
       }
@@ -422,6 +427,11 @@ export default class Combiner {
                 )
           );
           break;
+        case "line":
+          indexOfAlreadyFound = results.findIndex(
+            (r) => r.vulPath === vul.vulPath && r.lineNumber === vul.lineNumber
+          );
+          break;
       }
 
       for (let i = 1; i < toolResults.length && isVulnerable; i++) {
@@ -434,7 +444,7 @@ export default class Combiner {
             indexOfCurrentTool = toolResult.findIndex(
               (result) => result.vulPath === vul.vulPath
             );
-            isVulnerable = indexOfCurrentTool >= 0 && indexOfAlreadyFound < 0;
+            isVulnerable = indexOfCurrentTool >= 0;
             if (indexOfCurrentTool >= 0) {
               vul.similarResults.push(toolResult[indexOfCurrentTool]);
             }
@@ -453,7 +463,7 @@ export default class Combiner {
                     vul.lineNumber
                   )
             );
-            isVulnerable = indexOfCurrentTool >= 0 && indexOfAlreadyFound < 0;
+            isVulnerable = indexOfCurrentTool >= 0;
             if (indexOfCurrentTool >= 0) {
               vul.similarResults.push(toolResult[indexOfCurrentTool]);
             }
@@ -472,13 +482,13 @@ export default class Combiner {
         }
       }
 
-      if (indexOfAlreadyFound >= 0) {
-        // todo
-        results[indexOfAlreadyFound].similarResults.push(vul);
-      }
-
       if (isVulnerable) {
-        results.push(vul);
+        if (indexOfAlreadyFound >= 0) {
+          // todo
+          results[indexOfAlreadyFound].similarResults.push(vul);
+        } else {
+          results.push(vul);
+        }
       }
     }
 
@@ -517,7 +527,6 @@ export default class Combiner {
                 (r) => r.vulPath === result.vulPath
               );
               if (indexOfAlreadyFound >= 0) {
-                // todo
                 results[indexOfAlreadyFound].similarResults.push(result);
               }
               break;
@@ -536,7 +545,6 @@ export default class Combiner {
                     )
               );
               if (indexOfAlreadyFound >= 0) {
-                // todo
                 results[indexOfAlreadyFound].similarResults.push(result);
               }
               break;
@@ -549,7 +557,6 @@ export default class Combiner {
                   r.toolName !== result.toolName
               );
               if (indexOfAlreadyFound >= 0) {
-                // todo
                 const allIndexes = findAllIndexes(
                   results,
                   (r) =>
