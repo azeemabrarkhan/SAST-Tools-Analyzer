@@ -8,7 +8,7 @@ import {
 import { fetchFile } from "../../services/http.js";
 import { log } from "../../services/logger.js";
 import AbstractSynTree from "../../services/abstractSynTree.js";
-import { getSingleLineFromString } from "../../utils/text.js";
+import { getSingleLineFromString } from "../../services/text.js";
 
 export default class Ossf {
   currentDir;

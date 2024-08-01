@@ -10,12 +10,12 @@ import GenerativeAI from "../../services/generativeAI.js";
 import {
   getFunctionsInHierarchicalStructure,
   getInnerMostVulnerableFunctions,
-} from "../../utils/functions.js";
+} from "../../services/functions.js";
 import {
   getLinesFromString,
   removeLinesFromString,
   removeTabsAndNewLines,
-} from "../../utils/text.js";
+} from "../../services/text.js";
 
 const initialAIPrompt = `Code snipets are needed to be analyzed for vulnerability detection. Snipets will be supplied continously. They are needed
   to be checked for vulnererabilities. Do not provide long answers for every input, instead just provide a detailed summary in the end regarding 

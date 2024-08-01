@@ -1,4 +1,4 @@
-import { getTimeStamp } from "../utils/timeData.js";
+import { getTimeStamp } from "./timeData.js";
 import { deleteFile, appendFileAsync } from "./file.js";
 
 const currentDir = process.cwd();

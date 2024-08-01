@@ -5,7 +5,7 @@ import {
   writeFile,
   readFile,
 } from "./services/file.js";
-import { findAllIndexes } from "./utils/arryas.js";
+import { findAllIndexes } from "./services/arryas.js";
 
 export default class Combiner {
   found;

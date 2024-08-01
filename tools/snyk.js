@@ -4,7 +4,7 @@ import {
   readJsonFileSync,
   readFile,
 } from "../services/file.js";
-import { getSingleLineFromString } from "../utils/text.js";
+import { getSingleLineFromString } from "../services/text.js";
 
 export class Snyk {
   convertJsonToFormattedResult = async () => {
