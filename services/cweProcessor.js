@@ -17,3 +17,17 @@ export const getCWEsCount = (dataSource) => {
 
   return cweRecords;
 };
+
+export const getDetectedCWEsPercentage = (
+  totalCWEsRecord,
+  detectedCWEsRecord
+) => {
+  const CWEsPercentage = {};
+
+  for (const CWE in totalCWEsRecord) {
+    CWEsPercentage[CWE] = totalCWEsRecord[CWE] / detectedCWEsRecord[CWE] || 0;
+    console.log(CWEsPercentage[CWE]);
+  }
+
+  return CWEsPercentage;
+};
