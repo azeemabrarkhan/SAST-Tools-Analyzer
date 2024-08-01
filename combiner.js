@@ -230,11 +230,12 @@ export default class Combiner {
           break;
 
         case "line":
-          if (
+          const actualVulsInTheCurrentFileOnSameLine =
             actualVulsInTheCurrentFile.find(
               (v) => v.lineNumber === resultSlice.lineNumber
-            )
-          ) {
+            );
+          if (actualVulsInTheCurrentFileOnSameLine) {
+            resultSlice.CWEs = actualVulsInTheCurrentFileOnSameLine.CWEs;
             this.found.push(resultSlice);
           } else {
             this.notFound.push(resultSlice);
