@@ -1,11 +1,3 @@
-const testFunctions = [
-  { name: "a", startLine: 1, endLine: 15, isVuln: true },
-  { name: "b", startLine: 5, endLine: 7, isVuln: false },
-  { name: "c", startLine: 8, endLine: 14, isVuln: false },
-  { name: "d", startLine: 10, endLine: 12, isVuln: false },
-  { name: "e", startLine: 16, endLine: 20, isVuln: true },
-];
-
 export const getFunctionsInHierarchicalStructure = (functions) => {
   function getChildrenFunctionsNames(functionsP) {
     let childrenNames = [];
