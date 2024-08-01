@@ -1,10 +1,5 @@
 import Analyzer from "./analyzer.js";
-import {
-  makeDir,
-  readJsonFileSync,
-  writeFile,
-  readFile,
-} from "./services/file.js";
+import { makeDir, readJsonFileSync, writeFile } from "./services/file.js";
 import { findAllIndexes } from "./services/arryas.js";
 
 export default class Combiner {
