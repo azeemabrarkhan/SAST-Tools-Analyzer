@@ -1,6 +1,10 @@
 import Analyzer from "./analyzer.js";
 import { makeDir, readJsonFileSync, writeFile } from "./services/file.js";
 import { findAllIndexes } from "./services/arryas.js";
+import {
+  getCWEsCount,
+  getDetectedCWEsPercentage,
+} from "./services/cweProcessor.js";
 
 export default class Combiner {
   found;
@@ -11,6 +15,7 @@ export default class Combiner {
   analysisLevel;
   toolOrLogicName;
   availableTools;
+  totalCWEsCount;
 
   constructor() {
     this.found = [];
@@ -28,6 +33,18 @@ export default class Combiner {
       { name: process.env.TOOL2_NAME, isActive: true },
       { name: process.env.TOOL3_NAME, isActive: true },
     ];
+
+    if (process.env.RECORDS_TO_ANALYZE === "repositories/ossf") {
+      this.totalCWEsCount = getCWEsCount(this.recordsToAnalyze);
+
+      const path = "./output/";
+      makeDir(path);
+
+      writeFile(
+        `${path}/total_CWEs_count.json`,
+        JSON.stringify(this.totalCWEsCount, null, 2)
+      );
+    }
   }
 
   getActiveTools = () => {
@@ -591,7 +608,7 @@ export default class Combiner {
     );
     this.setFoundAndNotFound(results);
     this.setNotRecognizedPatches(results);
-    this.saveResultFile();
+    this.saveResultFiles();
     this.analyzer.evaluateResult(
       this.found.length,
       this.notFound.length,
@@ -600,7 +617,7 @@ export default class Combiner {
     );
   };
 
-  saveResultFile = () => {
+  saveResultFiles = () => {
     let path = `./output/${this.toolOrLogicName}/`;
     if (
       this.toolOrLogicName === "OR LOGIC" ||
@@ -621,6 +638,24 @@ export default class Combiner {
       `${path}/${this.analysisLevel}_not_recognized_patches.json`,
       JSON.stringify(this.notRecognizedPatches, null, 4)
     );
+
+    if (this.totalCWEsCount && this.analysisLevel === "line") {
+      const detectedCWEsCount = getCWEsCount(this.found);
+      const detectedCWEsPercentage = getDetectedCWEsPercentage(
+        this.totalCWEsCount,
+        detectedCWEsCount
+      );
+
+      writeFile(
+        `${path}/${this.analysisLevel}_detected_CWEs_count.json`,
+        JSON.stringify(detectedCWEsCount, null, 2)
+      );
+
+      writeFile(
+        `${path}/${this.analysisLevel}_detected_CWEs_percentage.json`,
+        JSON.stringify(detectedCWEsPercentage, null, 2)
+      );
+    }
   };
 
   runCombinerByTool = (toolName) => {
