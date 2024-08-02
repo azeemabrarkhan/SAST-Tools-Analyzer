@@ -96,6 +96,7 @@ export class Sonarqube {
         type: issue.type,
         key: issue.key,
         rule: issue.rule,
+        alertType: "",
         severity: issue.severity,
         message: issue.message,
         effort: issue.effort,
