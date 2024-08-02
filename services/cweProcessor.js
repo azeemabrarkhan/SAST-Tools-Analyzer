@@ -30,7 +30,9 @@ export const getDetectedCWEsPercentage = (
   const CWEsPercentage = {};
 
   for (const CWE in totalCWEsRecord) {
-    CWEsPercentage[CWE] = detectedCWEsRecord[CWE] / totalCWEsRecord[CWE] || 0;
+    CWEsPercentage[CWE] = `${
+      (detectedCWEsRecord[CWE] / totalCWEsRecord[CWE] || 0) * 100
+    }%`;
   }
 
   return CWEsPercentage;
