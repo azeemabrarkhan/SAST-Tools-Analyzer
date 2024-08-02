@@ -553,16 +553,14 @@ export default class Combiner {
               indexOfAlreadyFound = results.findIndex(
                 (r) =>
                   r.vulPath === result.vulPath &&
-                  r.lineNumber === result.lineNumber &&
-                  r.toolName !== result.toolName
+                  r.lineNumber === result.lineNumber
               );
               if (indexOfAlreadyFound >= 0) {
                 const allIndexes = findAllIndexes(
                   results,
                   (r) =>
                     r.vulPath === result.vulPath &&
-                    r.lineNumber === result.lineNumber &&
-                    r.toolName !== result.toolName
+                    r.lineNumber === result.lineNumber
                 );
                 for (const index of allIndexes) {
                   results[index].similarResults.push(result);
