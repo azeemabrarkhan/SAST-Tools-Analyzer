@@ -639,6 +639,16 @@ export default class Combiner {
       JSON.stringify(this.notRecognizedPatches, null, 4)
     );
 
+    const priorityIssues = this.getPriorityIssues();
+    console.log(
+      `Number of important issues with high priority: ${priorityIssues.length}`
+    );
+
+    writeFile(
+      `${path}/${this.analysisLevel}_important_sorted_results.json`,
+      JSON.stringify(priorityIssues, null, 4)
+    );
+
     if (this.totalCWEsCount && this.analysisLevel === "line") {
       const detectedCWEsCount = getCWEsCount(this.found);
       const detectedCWEsPercentage = getDetectedCWEsPercentage(
@@ -656,6 +666,55 @@ export default class Combiner {
         JSON.stringify(detectedCWEsPercentage, null, 2)
       );
     }
+  };
+
+  getPriorityIssues = () => {
+    const getSortedTypedIssues = (records, type) => {
+      const typedFilteredIssues = records.filter((r) => r.alertType === type);
+      const sortedSnyKIssues = typedFilteredIssues
+        .filter((r) => r.toolName === "snyk")
+        .sort(
+          (a, b) => b.properties.priorityScore - a.properties.priorityScore
+        );
+      const otherIssues = typedFilteredIssues.filter(
+        (r) => r.toolName !== "snyk"
+      );
+
+      const sortedOtherIssues = otherIssues.sort((a, b) => {
+        // Sort by severity: High, Medium, then others
+        const severityOrder = { High: 1, Medium: 2, Low: 3 };
+        const severityA = severityOrder[a.severity] || 4;
+        const severityB = severityOrder[b.severity] || 4;
+        if (severityA !== severityB) {
+          return severityA - severityB;
+        }
+
+        // Sort by quickFixAvailable: yes, no, then others
+        const quickFixOrder = { yes: 1, no: 2 };
+        const quickFixA = quickFixOrder[a.quickFixAvailable] || 3;
+        const quickFixB = quickFixOrder[b.quickFixAvailable] || 3;
+        if (quickFixA !== quickFixB) {
+          return quickFixA - quickFixB;
+        }
+
+        // Sort by effort with minimum number first
+        const getEffortInMinutes = (effort) => {
+          if (!effort) return Infinity;
+          const intMins = parseInt(effort);
+          return intMins || Infinity;
+        };
+
+        return getEffortInMinutes(a.effort) - getEffortInMinutes(b.effort);
+      });
+
+      return [...sortedSnyKIssues, ...sortedOtherIssues];
+    };
+
+    const combinedResults = [...this.found, ...this.notFound];
+    return [
+      ...getSortedTypedIssues(combinedResults, "error"),
+      // ...getSortedTypedIssues(combinedResults, "warning"),
+    ];
   };
 
   runCombinerByTool = (toolName) => {
