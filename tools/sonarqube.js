@@ -83,6 +83,18 @@ export class Sonarqube {
     const formattedResults = [];
     await makeDir("./formattedResults");
 
+    const mapType = (type) => {
+      if (type === "VULNERABILITY") return "error";
+      else if (type === "BUG") return "warning";
+      else if (type === "CODE_SMELL") return "note";
+    };
+
+    const mapSeverity = (severity) => {
+      if (severity === "BLOCKER" || severity === "CRITICAL") return "High";
+      else if (severity === "MAJOR") return "Medium";
+      else if (severity === "MINOR" || severity === "INFO") return "Low";
+    };
+
     for (const issue of issues) {
       const formattedResult = {
         name: "",
@@ -96,8 +108,8 @@ export class Sonarqube {
         type: issue.type,
         key: issue.key,
         rule: issue.rule,
-        alertType: "",
-        severity: issue.severity,
+        alertType: mapType(issue.type),
+        severity: mapSeverity(issue.severity),
         message: issue.message,
         effort: issue.effort,
         tags: issue.tags,
