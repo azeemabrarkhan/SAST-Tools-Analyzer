@@ -108,7 +108,10 @@ export default class Combiner {
         }
       }
       return recordsToAnalyzeWithoutDuplicates.length;
-    } else if (this.analysisLevel === "function") {
+    } else if (
+      this.analysisLevel === "function" &&
+      process.env.RECORDS_TO_ANALYZE === "repositories/ossf"
+    ) {
       for (const record of this.recordsToAnalyze) {
         if (
           !recordsToAnalyzeWithoutDuplicates.find(
@@ -128,6 +131,16 @@ export default class Combiner {
         }
       }
       return recordsToAnalyzeWithoutDuplicates.length;
+    } else if (
+      this.analysisLevel === "function" &&
+      process.env.RECORDS_TO_ANALYZE === "repositories/javascriptDataset"
+    ) {
+      return this.recordsToAnalyze
+        .map(
+          (r) =>
+            r.functionsInHierarchicalStructure.filter((f) => f.isVuln).length
+        )
+        .reduce((acc, c) => acc + c, 0);
     } else {
       return this.recordsToAnalyze.length;
     }
@@ -136,9 +149,13 @@ export default class Combiner {
   setFoundAndNotFound = (results) => {
     this.found = [];
     this.notFound = [];
-    for (const resultSlice of results.filter((r) =>
-      r.vulPath.startsWith("vul/")
-    )) {
+
+    const vulResults =
+      process.env.RECORDS_TO_ANALYZE === "repositories/ossf"
+        ? results.filter((r) => r.vulPath.startsWith("vul/"))
+        : results;
+
+    for (const resultSlice of vulResults) {
       const actualVulsInTheCurrentFile = this.recordsToAnalyze.filter(
         (record) => record.vulPath === resultSlice.vulPath
       );
@@ -173,8 +190,9 @@ export default class Combiner {
           break;
 
         case "function":
-          if (
-            actualVulsInTheCurrentFile.find(
+          let matchFunctionFound;
+          if (process.env.RECORDS_TO_ANALYZE === "repositories/ossf") {
+            matchFunctionFound = actualVulsInTheCurrentFile.find(
               (v) =>
                 this.getFunctionNameWithLineNumer(
                   v.functionsInVul,
@@ -184,8 +202,23 @@ export default class Combiner {
                   v.functionsInVul,
                   resultSlice.lineNumber
                 )
-            )
+            );
+          } else if (
+            process.env.RECORDS_TO_ANALYZE === "repositories/javascriptDataset"
           ) {
+            const vulFunctionName = this.getFunctionNameWithLineNumer(
+              actualVulsInTheCurrentFile[0].functionsInVul,
+              resultSlice.lineNumber
+            );
+
+            matchFunctionFound =
+              typeof vulFunctionName === "string"
+                ? actualVulsInTheCurrentFile[0].functionsInVul.find(
+                    (f) => f.name === vulFunctionName
+                  ).isVuln
+                : false;
+          }
+          if (matchFunctionFound) {
             indexOfAlreadyFoundOrNotFound = this.found.findIndex(
               (r) =>
                 r.vulPath === resultSlice.vulPath &&
@@ -263,6 +296,25 @@ export default class Combiner {
             }
           }
           break;
+      }
+    }
+
+    if (process.env.RECORDS_TO_ANALYZE === "repositories/ossf") {
+      for (const resultSlice of results.filter((r) =>
+        r.vulPath.startsWith("clean/")
+      )) {
+        const indexOfAlreadyFoundOrNotFound = this.notFound.findIndex(
+          (r) =>
+            r.vulPath === resultSlice.vulPath &&
+            r.lineNumber === resultSlice.lineNumber
+        );
+        if (indexOfAlreadyFoundOrNotFound < 0) {
+          this.notFound.push(resultSlice);
+        } else {
+          this.notFound[indexOfAlreadyFoundOrNotFound].similarResults.push(
+            resultSlice
+          );
+        }
       }
     }
   };
@@ -355,6 +407,13 @@ export default class Combiner {
   };
 
   evaluateIndividualTool = (toolName) => {
+    if (
+      process.env.RECORDS_TO_ANALYZE === "repositories/javascriptDataset" &&
+      this.analysisLevel === "line"
+    ) {
+      return;
+    }
+
     if (!this.isToolActive(toolName)) {
       console.log(`The selected tool '${toolName}' is currently disabled\n`);
       return;
@@ -395,6 +454,13 @@ export default class Combiner {
   };
 
   withAndLogic = () => {
+    if (
+      process.env.RECORDS_TO_ANALYZE === "repositories/javascriptDataset" &&
+      this.analysisLevel === "line"
+    ) {
+      return;
+    }
+
     const fileNames = this.getActiveTools().map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );
@@ -513,6 +579,13 @@ export default class Combiner {
   };
 
   withOrLogic = () => {
+    if (
+      process.env.RECORDS_TO_ANALYZE === "repositories/javascriptDataset" &&
+      this.analysisLevel === "line"
+    ) {
+      return;
+    }
+
     const fileNames = this.getActiveTools().map(
       (selectedToolName) => `formattedResult-${selectedToolName}.json`
     );

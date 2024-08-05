@@ -111,12 +111,12 @@ export default class JavascriptDataset {
   }
 
   getTotalNumberOfFunctionsDownloaded = () => {
-    return this.downloadedRecords.map((r) => r.functions).flat().length;
+    return this.downloadedRecords.map((r) => r.functionsInVul).flat().length;
   };
 
   getNumberOfVulnerableFunctions = () => {
     return this.downloadedRecords
-      .map((r) => r.functions)
+      .map((r) => r.functionsInVul)
       .flat()
       .filter((r) => r.isVuln).length;
   };
@@ -128,7 +128,9 @@ export default class JavascriptDataset {
   };
 
   getNumberOfInnerMostVulnerableFunctions = () => {
-    return this.downloadedRecords.map((r) => r.functionsInVul).flat().length;
+    return this.downloadedRecords
+      .map((r) => r.innerMostVulnerableFunctions)
+      .flat().length;
   };
 
   async processRecord(record) {
@@ -163,7 +165,10 @@ export default class JavascriptDataset {
         writeFileAsync(`${fullVulPath}/${record.fileName}`, results.sourceCode);
         writeFileAsync(
           `${fullFixPath}/${record.fileName}`,
-          removeLinesFromString(results.sourceCode, record.functionsInVul)
+          removeLinesFromString(
+            results.sourceCode,
+            record.functionsInHierarchicalStructure.filter((f) => f.isVuln)
+          )
         );
         writeFileAsync(
           `${fullVulPath}/record.txt`,
@@ -226,7 +231,7 @@ export default class JavascriptDataset {
     ];
 
     return formattedDataset.map((repoPath, index) => {
-      const functions = dataset
+      const functionsInVul = dataset
         .filter((record) => record["full_repo_path"] === repoPath)
         .sort((a, b) => parseInt(a.line) - parseInt(b.line))
         .map((record, index) => ({
@@ -237,9 +242,11 @@ export default class JavascriptDataset {
         }));
 
       const functionsInHierarchicalStructure =
-        getFunctionsInHierarchicalStructure(functions.map((f) => ({ ...f })));
+        getFunctionsInHierarchicalStructure(
+          functionsInVul.map((f) => ({ ...f }))
+        );
 
-      const functionsInVul = getInnerMostVulnerableFunctions(
+      const innerMostVulnerableFunctions = getInnerMostVulnerableFunctions(
         functionsInHierarchicalStructure
       );
 
@@ -250,7 +257,7 @@ export default class JavascriptDataset {
         fixPath: getPath(repoPath, index, true),
         fullFileName: getFullFilename(repoPath),
         fileName: getFilename(repoPath),
-        functions,
+        innerMostVulnerableFunctions,
         functionsInHierarchicalStructure,
         functionsInVul,
       };
