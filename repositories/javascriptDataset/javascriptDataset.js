@@ -36,10 +36,10 @@ export default class JavascriptDataset {
 
   constructor() {
     this.currentDir = process.cwd();
-    this.datasetFilePath = `repositories/javascriptDataset/records.csv`;
-    this.downloadedRecordsFilePath = `${this.currentDir}/repositories/javascriptDataset/downloadedRecords.json`;
-    this.statsFilePath = `${this.currentDir}/datasets/javascriptDataset/stats.txt`;
-    this.aiChatHistoryPath = `${this.currentDir}/datasets/javascriptDataset/aiChatHistory.txt`;
+    this.datasetFilePath = `${process.env.RECORDS_TO_ANALYZE}/records.csv`;
+    this.downloadedRecordsFilePath = `${this.currentDir}/${process.env.RECORDS_TO_ANALYZE}/downloadedRecords.json`;
+    this.statsFilePath = `${this.currentDir}/${process.env.FILES_BASE_PATH}/stats.txt`;
+    this.aiChatHistoryPath = `${this.currentDir}/${process.env.FILES_BASE_PATH}/aiChatHistory.txt`;
     this.downloadedRecords = [];
     this.shouldAnalyzeRecordsWithAI = false;
     this.generativeAI = new GenerativeAI();
@@ -134,7 +134,7 @@ export default class JavascriptDataset {
   };
 
   async processRecord(record) {
-    const fullVulPath = `${this.currentDir}/datasets/javascriptDataset/${record.vulPath}`;
+    const fullVulPath = `${this.currentDir}/${process.env.FILES_BASE_PATH}/${record.vulPath}`;
     const fullFixPath = `${this.currentDir}/datasets/combinedDataset/${record.fixPath}`;
 
     makeDir(fullVulPath);

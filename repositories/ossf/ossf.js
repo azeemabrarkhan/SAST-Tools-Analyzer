@@ -21,9 +21,9 @@ export default class Ossf {
   constructor() {
     this.currentDir = process.cwd();
     this.downloadedRecords = [];
-    this.datasetFilePath = `${this.currentDir}/repositories/ossf/records.json`;
-    this.downloadedRecordsFilePath = `${this.currentDir}/repositories/ossf/downloadedRecords.json`;
-    this.statsFilePath = `${this.currentDir}/datasets/ossf/stats.txt`;
+    this.datasetFilePath = `${this.currentDir}/${process.env.RECORDS_TO_ANALYZE}/records.json`;
+    this.downloadedRecordsFilePath = `${this.currentDir}/${process.env.RECORDS_TO_ANALYZE}/downloadedRecords.json`;
+    this.statsFilePath = `${this.currentDir}/${process.env.FILES_BASE_PATH}/stats.txt`;
     this.abstractSyntaxTree = new AbstractSynTree();
     this.numberOfFilesDownloaded = 0;
   }
@@ -121,9 +121,9 @@ export default class Ossf {
     const splittedUrl = repository.split("/");
     const ownerAndProject = `${splittedUrl[3]}/${splittedUrl[4].split(".")[0]}`;
 
-    const vulPath = `${this.currentDir}/datasets/ossf/vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}`;
+    const vulPath = `${this.currentDir}/${process.env.FILES_BASE_PATH}/vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}`;
 
-    const fixPath = `${this.currentDir}/datasets/ossf/fix/${CVE}/${ownerAndProject}/${index}/${postPatch.commit}`;
+    const fixPath = `${this.currentDir}/${process.env.FILES_BASE_PATH}/fix/${CVE}/${ownerAndProject}/${index}/${postPatch.commit}`;
 
     const vulPathForCombinedDataset = `${this.currentDir}/datasets/combinedDataset/vul/${CVE}/${ownerAndProject}/${index}/${prePatch.commit}`;
 
