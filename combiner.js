@@ -207,13 +207,13 @@ export default class Combiner {
             process.env.RECORDS_TO_ANALYZE === "repositories/javascriptDataset"
           ) {
             const vulFunctionName = this.getFunctionNameWithLineNumer(
-              actualVulsInTheCurrentFile[0].functionsInVul,
+              actualVulsInTheCurrentFile[0]?.functionsInVul ?? [],
               resultSlice.lineNumber
             );
 
             matchFunctionFound =
               typeof vulFunctionName === "string"
-                ? actualVulsInTheCurrentFile[0].functionsInVul.find(
+                ? actualVulsInTheCurrentFile[0]?.functionsInVul.find(
                     (f) => f.name === vulFunctionName
                   ).isVuln
                 : false;
@@ -223,11 +223,11 @@ export default class Combiner {
               (r) =>
                 r.vulPath === resultSlice.vulPath &&
                 this.getFunctionNameWithLineNumer(
-                  actualVulsInTheCurrentFile[0].functionsInVul,
+                  actualVulsInTheCurrentFile[0]?.functionsInVul ?? [],
                   r.lineNumber
                 ) ===
                   this.getFunctionNameWithLineNumer(
-                    actualVulsInTheCurrentFile[0].functionsInVul,
+                    actualVulsInTheCurrentFile[0]?.functionsInVul ?? [],
                     resultSlice.lineNumber
                   )
             );
@@ -243,11 +243,11 @@ export default class Combiner {
               (r) =>
                 r.vulPath === resultSlice.vulPath &&
                 this.getFunctionNameWithLineNumer(
-                  actualVulsInTheCurrentFile[0].functionsInVul,
+                  actualVulsInTheCurrentFile[0]?.functionsInVul ?? [],
                   r.lineNumber
                 ) ===
                   this.getFunctionNameWithLineNumer(
-                    actualVulsInTheCurrentFile[0].functionsInVul,
+                    actualVulsInTheCurrentFile[0]?.functionsInVul ?? [],
                     resultSlice.lineNumber
                   )
             );
