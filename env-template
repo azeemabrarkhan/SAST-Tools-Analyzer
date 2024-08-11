@@ -1,5 +1,33 @@
+SONAR_QUBE_PROJECT_KEY = <YOUR_SONAR_QUBE_PROJECT_KEY>
+
+########## ossf ##########
+FILES_BASE_PATH = datasets/ossf
+RECORDS_TO_ANALYZE = repositories/ossf
+SONAR_QUBE_PROJECT_KEY = <OSSF_PROJECT_KEY_ON_SONAR_QUBE_SERVER>
+
+########## javascriptDataset ##########
+# FILES_BASE_PATH = datasets/javascriptDataset
+# RECORDS_TO_ANALYZE = repositories/javascriptDataset
+# SONAR_QUBE_PROJECT_KEY = <JAVASCRIPT_PROJECT_KEY_ON_SONAR_QUBE_SERVER>
+
+########## combinedDataset ##########
+# FILES_BASE_PATH = datasets/combinedDataset
+# RECORDS_TO_ANALYZE = repositories/ossf
+# SONAR_QUBE_PROJECT_KEY = <COMBINED_PROJECT_KEY_ON_SONAR_QUBE_SERVER>
+
 GITHUB_AUTH_TOKEN = Bearer <YOUR_GITHUB_AUTH_TOKEN>
 GENERATIVE_AI_API_KEY = <YOUR_GEN_AI_API_KEY>
-SONAR_QUBE_PROJECT_KEY = <YOUR_SONAR_QUBE_PROJECT_KEY>
+
+# Tool 1
+TOOL1_NAME = sonarqube
 SONAR_QUBE_USERNAME = <YOUR_SONAR_QUBE_USERNAME>
 SONAR_QUBE_PASSWORD = <YOUR_SONAR_QUBE_PASSWORD>
+
+# Tool 2
+TOOL2_NAME = codeql
+CODEQL_RESULT_FILENAME = javascript-security-experimental.csv
+
+#Tool 3
+TOOL3_NAME = snyk
+SNYK_RESULT_FILENAME = snykResult.json
+SNYK_LOG_FILENAME = snykResult.txt
