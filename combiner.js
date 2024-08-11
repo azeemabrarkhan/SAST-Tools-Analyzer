@@ -228,7 +228,6 @@ export default class Combiner {
 
       if (isVulnerable) {
         if (indexOfAlreadyFound >= 0) {
-          // todo
           results[indexOfAlreadyFound].similarResults.push(vul);
         } else {
           results.push(vul);
