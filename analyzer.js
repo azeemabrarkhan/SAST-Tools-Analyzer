@@ -452,10 +452,7 @@ export default class Analyzer {
     };
 
     const combinedResults = [...this.found, ...this.notFound];
-    return [
-      ...getSortedTypedIssues(combinedResults, "error"),
-      // ...getSortedTypedIssues(combinedResults, "warning"),
-    ];
+    return [...getSortedTypedIssues(combinedResults, "error")];
   };
 
   calculatePerformanceMetrics = (
