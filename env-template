@@ -5,11 +5,6 @@ FILES_BASE_PATH = datasets/ossf
 RECORDS_TO_ANALYZE = repositories/ossf
 SONAR_QUBE_PROJECT_KEY = <OSSF_PROJECT_KEY_ON_SONAR_QUBE_SERVER>
 
-########## javascriptDataset ##########
-# FILES_BASE_PATH = datasets/javascriptDataset
-# RECORDS_TO_ANALYZE = repositories/javascriptDataset
-# SONAR_QUBE_PROJECT_KEY = <JAVASCRIPT_PROJECT_KEY_ON_SONAR_QUBE_SERVER>
-
 ########## combinedDataset ##########
 # FILES_BASE_PATH = datasets/combinedDataset
 # RECORDS_TO_ANALYZE = repositories/ossf
