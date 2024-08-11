@@ -59,3 +59,10 @@ export const getInnerMostVulnerableFunctions = (functions) => {
   processChildren(functions);
   return vulnerableFunctions;
 };
+
+export const getFunctionNameWithLineNumer = (functions, lineNumber) => {
+  const fs = functions
+    .filter((f) => f.startLine <= lineNumber && f.endLine >= lineNumber)
+    .sort((fA, fB) => fB.startLine - fA.startLine);
+  return fs[0]?.name ?? lineNumber;
+};
