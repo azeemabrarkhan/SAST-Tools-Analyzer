@@ -137,8 +137,7 @@ export default class Combiner {
     ) {
       return this.recordsToAnalyze
         .map(
-          (r) =>
-            r.functionsInHierarchicalStructure.filter((f) => f.isVuln).length
+          (r) => r.innerMostVulnerableFunctions.filter((f) => f.isVuln).length
         )
         .reduce((acc, c) => acc + c, 0);
     } else {
