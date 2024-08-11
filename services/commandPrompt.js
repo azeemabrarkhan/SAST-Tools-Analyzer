@@ -34,23 +34,22 @@ export default class CommandPrompt {
         ["Fetch options"]: {
           title: "Fetch options",
           options: `
-1- Fetch Secbench dataset Part1
-2- Fetch Secbench dataset Part2
-3- Fetch Ossf dataset
-4- Fetch Javascript dataset with generative AI
-5- Fetch Javascript dataset w/o generative AI
-6- Fetch both Ossf and Javascript datasets w/o generative AI
-7- Back
-8- End Program\n
+1- Fetch both Ossf and Javascript datasets
+2- Fetch Ossf dataset
+3- Fetch Javascript dataset
+4- Fetch Secbench dataset Part1
+5- Fetch Secbench dataset Part2
+6- Back
+7- End Program\n
 `,
         },
         ["Convert to formatted outputs"]: {
           title: "Convert to formatted outputs",
           options: `
-1- Convert ${process.env.TOOL1_NAME} results (server should be active)
-2- Convert ${process.env.TOOL2_NAME} results
-3- Convert ${process.env.TOOL3_NAME} results
-4- Convert all results
+1- Convert all results
+2- Convert ${process.env.TOOL1_NAME} results (server should be active)
+3- Convert ${process.env.TOOL2_NAME} results
+4- Convert ${process.env.TOOL3_NAME} results
 5- Back
 6- End Program\n
 `,
@@ -165,28 +164,25 @@ export default class CommandPrompt {
         case "Fetch options":
           switch (optionIndex) {
             case "1":
+              await new Ossf().scrape();
+              await new JavascriptDataset().scrape(false);
+              break;
             case "2":
-              const optionInt = parseInt(optionIndex);
-              if (typeof optionInt === "number")
-                await new Secbench().scrape(optionInt);
+              await new Ossf().scrape();
               break;
             case "3":
-              await new Ossf().scrape();
+              await new JavascriptDataset().scrape(false);
               break;
             case "4":
-              await new JavascriptDataset().scrape(true);
+              await new Secbench().scrape(1);
               break;
             case "5":
-              await new JavascriptDataset().scrape(false);
+              await new Secbench().scrape(2);
               break;
             case "6":
-              await new Ossf().scrape();
-              await new JavascriptDataset().scrape(false);
-              break;
-            case "7":
               goBack();
               break;
-            case "8":
+            case "7":
               end();
               break;
           }
@@ -195,23 +191,6 @@ export default class CommandPrompt {
           switch (optionIndex) {
             case "1":
               console.clear();
-              console.log("Converted sonarqube results to formatted output");
-              await new Sonarqube().convertTypeToFormattedResult(
-                "VULNERABILITY"
-              );
-              break;
-            case "2":
-              console.clear();
-              console.log("Converted codeql results to formatted output");
-              await new CodeQl().convertCsvToFormattedResult();
-              break;
-            case "3":
-              console.clear();
-              console.log("Converted snyk results to formatted output");
-              await new Snyk().convertJsonToFormattedResult();
-              break;
-            case "4":
-              console.clear();
               console.log(
                 "Converted sonarqube, codeql and snyk results to their respective formatted output"
               );
@@ -219,6 +198,23 @@ export default class CommandPrompt {
                 "VULNERABILITY"
               );
               await new CodeQl().convertCsvToFormattedResult();
+              await new Snyk().convertJsonToFormattedResult();
+              break;
+            case "2":
+              console.clear();
+              console.log("Converted sonarqube results to formatted output");
+              await new Sonarqube().convertTypeToFormattedResult(
+                "VULNERABILITY"
+              );
+              break;
+            case "3":
+              console.clear();
+              console.log("Converted codeql results to formatted output");
+              await new CodeQl().convertCsvToFormattedResult();
+              break;
+            case "4":
+              console.clear();
+              console.log("Converted snyk results to formatted output");
               await new Snyk().convertJsonToFormattedResult();
               break;
             case "5":
