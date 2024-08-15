@@ -10,14 +10,19 @@ export const getCWEsCount = (dataSource) => {
     a.localeCompare(b)
   );
 
+  const cweWeightsForEachVuln = data
+    .map((r) => r.CWEs.map((cwe) => ({ [cwe]: 1 / r.CWEs.length })))
+    .reduce((acc, cweObjsForAVuln) => [...acc, ...cweObjsForAVuln], []);
+
   const cweRecords = {};
 
   allCWEsWithoutDuplicates.forEach(
     (cwe) =>
-      (cweRecords[cwe] = findAllIndexes(
-        allCWEs,
-        (value) => value === cwe
-      ).length)
+      (cweRecords[cwe] = cweWeightsForEachVuln.reduce(
+        (acc, cweWeightsForAVuln) =>
+          acc + (cweWeightsForAVuln[cwe] ? cweWeightsForAVuln[cwe] : 0),
+        0
+      ))
   );
 
   return cweRecords;
