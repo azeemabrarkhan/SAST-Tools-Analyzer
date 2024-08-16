@@ -1,4 +1,4 @@
-import { findAllIndexes } from "./arryas.js";
+import { findAllIndexes } from "./arrays.js";
 import { readJsonFileSync } from "./file.js";
 
 export const getCWEsCount = (dataSource) => {

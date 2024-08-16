@@ -1,6 +1,6 @@
 import Analyzer from "./analyzer.js";
 import { readJsonFileSync } from "./services/file.js";
-import { findAllIndexes } from "./services/arryas.js";
+import { findAllIndexes } from "./services/arrays.js";
 import { getFunctionNameWithLineNumer } from "./services/functions.js";
 
 export default class Combiner {
