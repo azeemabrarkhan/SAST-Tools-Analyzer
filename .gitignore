@@ -6,4 +6,4 @@ datasets/
 repositories/ossf/downloadedRecords.json
 repositories/javascriptDataset/downloadedRecords.json
 formattedResults/
-output/
+output*/
