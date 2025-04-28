@@ -16,7 +16,7 @@ The project is implemented in JavaScript, and the source code is divided into se
 - **Benchmarking**: Compares the tool results with predefined benchmark datasets.
 - **Performance Metrics**: Calculates key performance metrics (TP, FP, FN, etc.) for individual and combined tool results.
 
-  ![Tool analysis workflow](./tool-pipeline.png)
+  ![Tool UI](./UI.png)
 
 ## Project Structure
 
